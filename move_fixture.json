@@ -1,0 +1,81 @@
+{
+  "you": "25229082-f0d7-4315-8c52-6b0ff23fb1fb",
+  "width": 20,
+  "turn": 0,
+  "snakes": [
+    {
+      "taunt": "git gud",
+      "name": "my-snake",
+      "id": "25229082-f0d7-4315-8c52-6b0ff23fb1fb",
+      "health_points": 14,
+      "coords": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ]
+      ]
+    },
+    {
+      "taunt": "gotta go fast",
+      "name": "other-snake",
+      "id": "0fd33b05-37dd-419e-b44f-af9936a0a00c",
+      "health_points": 50,
+      "coords": [
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          0
+        ]
+      ]
+    }
+  ],
+  "height": 20,
+  "game_id": "870d6d79-93bf-4941-8d9e-944bee131167",
+  "food": [
+    [
+      2,
+      0
+    ]
+  ],
+  "dead_snakes": [
+    {
+      "taunt": "gotta go fast",
+      "name": "other-snake",
+      "id": "c4e48602-197e-40b2-80af-8f89ba005ee9",
+      "health_points": 50,
+      "coords": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    }
+  ]
+}
