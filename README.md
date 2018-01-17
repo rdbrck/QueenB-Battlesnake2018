@@ -1,9 +1,5 @@
 # battlesnake2018
 
-#### who wrote me
-
-* [Mark Roller](https://github.com/rollerbrick)
-
 #### what's our strat?
 
 tl;dr - pick a point, BFS, floodfill, catch errors, move
