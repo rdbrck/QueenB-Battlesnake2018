@@ -1,5 +1,5 @@
-from utils import sub, add, dist
-from constants import DIR_VECTORS, EMPTY, FOOD, SNAKE, SPOILED
+from .utils import sub, add, dist
+from .constants import DIR_VECTORS, EMPTY, FOOD, SNAKE, SPOILED
 
 class Snake(object):
     ATTRIBUTES = ('id', 'health_points')

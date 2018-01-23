@@ -43,3 +43,11 @@ or run it using uwsgi
 ```
 $ uwsgi --ini uwsgi/battlesnake-dev.ini # adjust uwsgi params accordingly
 ```
+
+### Environment
+
+```
+python3 -m venv .venv
+.venv/bin/activate
+
+```
