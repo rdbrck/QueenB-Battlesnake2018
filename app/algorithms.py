@@ -4,13 +4,14 @@ import time
 import random
 
 from collections import deque
-from entities import Board
+from .entities import Board
 
-from utils import neighbours, surrounding, dist, mul, sub, timing
-from constants import DIR_NAMES, DIR_VECTORS, FOOD, EMPTY, SNAKE
+from .utils import neighbours, surrounding, dist, mul, sub, timing
+from .constants import DIR_NAMES, DIR_VECTORS, FOOD, EMPTY, SNAKE
 from math import floor, ceil
 
 from copy import copy, deepcopy
+from functools import reduce
 
 def flood_fill(board, start_pos, allow_start_in_occupied_cell=False):
     """ Flood fill is an algorithm that expands from a starting position into adjacent
@@ -88,8 +89,8 @@ def astar(vacant_func, start_pos, goal_pos, allow_start_in_occupied_cell=False):
 
 def _rate_cell(cell, board, recurse = False):
     """ rates a cell based on proximity to other snakes, food, the edge of the board, etc """
-    cells = filter(lambda m_cell: board.inside(m_cell), surrounding(cell))
-    cells = map(lambda m_cell: (m_cell, board.get_cell(m_cell)), cells)
+    cells = [m_cell for m_cell in surrounding(cell) if board.inside(m_cell)]
+    cells = [(m_cell, board.get_cell(m_cell)) for m_cell in cells]
     cell_value = reduce(lambda carry, m_cell: carry + [0.5, -5, 2, 0][m_cell[1]], cells, 0)
 
     if recurse or cell_value < 2: return cell_value
@@ -117,7 +118,7 @@ def find_safest_position(current_position, direction, board):
         )
 
         if depth == max_depth or (sector_height * sector_width <= 1):
-            return sorted(carry, lambda cell_1, cell_2: cell_1[1] < cell_2[1])[:3]
+            return sorted(carry, key=lambda x: x[1])[:3]
         else:
             # filter cells that we've already rated
             carry_cells = [ cell[0] for cell in carry ]
@@ -172,9 +173,9 @@ def find_safest_position(current_position, direction, board):
 
 def find_food(current_position, health_remaining, board, board_food):
     """ finds and rates food positions """
-    rated_food = map(lambda food: (food, _rate_cell(food, board, True)), board_food)
+    rated_food = [(food, _rate_cell(food, board, True)) for food in board_food]
 
-    return sorted(rated_food, lambda food_1, food_2: food_1[1] > food_2[1])
+    return sorted(rated_food, key = lambda x: x[1], reverse=True)
     # rated_food = filter(lambda food: dist(food[0], current_position) < health_remaining, rated_food)
     # return reduce(lambda carry, food: food if not carry[0] or food[1] > carry[1] else carry, rated_food, (None, None))
 
@@ -204,7 +205,7 @@ def bfs(starting_position, target_position, board, exclude, return_list):
     for excluded_point in exclude:
         board_copy.set_cell(excluded_point, "B")
 
-    print board_copy.format()
+    # print(board_copy.format())
     queue = deque([(x, y, None)])
     while len(queue) > 0:
         node = queue.popleft()

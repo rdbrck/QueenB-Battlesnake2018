@@ -1,6 +1,6 @@
 import time
 from contextlib import contextmanager
-from constants import DIR_NAMES, DIR_VECTORS
+from .constants import DIR_NAMES, DIR_VECTORS
 
 @contextmanager
 def timing(label = "previous action", time_remaining = [200]):
@@ -8,7 +8,7 @@ def timing(label = "previous action", time_remaining = [200]):
     yield
     time_elapsed = time.time() - start_time
     time_remaining[0] = time_remaining[0] - (time_elapsed * 1000)
-    print('{} took {}ms'.format(label, time_elapsed * 1000))
+    # print(('{} took {}ms'.format(label, time_elapsed * 1000)))
 
 
 def add(a, b):

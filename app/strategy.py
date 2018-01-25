@@ -1,4 +1,4 @@
-from utils import dist
+from .utils import dist
 
 
 def general_direction(board, head, health):
@@ -59,7 +59,7 @@ def general_direction(board, head, health):
             elif pos[1] > head[1]:
                 direction['down'] -= (10000 / ((health / 10) + 1)) / dist(pos, head)
 
-    return min(direction.iterkeys(), key=(lambda key: direction[key]))
+    return min(iter(direction.keys()), key=(lambda key: direction[key]))
 
 
 def need_food(board, head, health):
