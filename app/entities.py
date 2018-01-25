@@ -1,6 +1,7 @@
 from utils import sub, add, dist
 from constants import DIR_VECTORS, EMPTY, FOOD, SNAKE, SPOILED
 
+
 class Snake(object):
     ATTRIBUTES = ('id', 'health_points')
 
@@ -49,19 +50,24 @@ class Board(object):
             self.width = clone.width
             self.height = clone.height
             self.cells = []
+
             for x in range(self.width):
                 self.cells.append(clone.cells[x].copy())
+
             self.snakes = [Snake(s) for s in clone.snakes]
             self.food = clone.food.copy()
+
         else:
             # Initialize a board from a battlesnake gamestate dict
             self.width = kwargs['width']
             self.height = kwargs['height']
             self.cells = []
             self.meta_cells = []
+
             for x in range(self.width):
                 self.cells.append([EMPTY] * self.height)
                 self.meta_cells.append([None] * self.height)
+
             # Only take snakes that are alive
             self.snakes = [Snake(**s) for s in kwargs['snakes']]
             self.food = list(map(tuple, kwargs['food']))
@@ -80,6 +86,7 @@ class Board(object):
 
     def _contested_food (self, pos, snake_id):
         current_snake = self.snakes[0]
+
         for snake in self.snakes:
             if ((dist(snake.head, pos) < dist(current_snake.head, pos)) or
                     ((dist(snake.head, pos) == dist(current_snake.head, pos)) and (len(snake.coords) >= len(current_snake.coords)))):
@@ -127,12 +134,14 @@ class Board(object):
 
     def format_meta(self):
         s = []
+
         for y in range(self.height):
             s.append('|')
             for x in range(self.width):
                 v = str(self.meta_cells[x][y])
                 s.append(v)
             s.append('|\n')
+
         bar = '-' * (len(self.meta_cells) * len(v) + 2) + '\n'
         s.insert(0, bar)
         s.append(bar)
@@ -140,12 +149,14 @@ class Board(object):
 
     def format(self):
         s = []
+
         for y in range(self.height):
             s.append('|')
             for x in range(self.width):
                 v = str(self.cells[x][y])
                 s.append(v)
             s.append('|\n')
+
         bar = '-' * (len(self.cells) * len(v) + 2) + '\n'
         s.insert(0, bar)
         s.append(bar)

@@ -1,24 +1,12 @@
-REDSNAKE = 2
-ADVSNAKE = 3
+import random
 
-PING = 50
+SNAKE_NAME = "BETTER THAN ALEKSIY\'S SNAKE"
+SNAKE_COLOR = "#ff0000"
+SNAKE_IMAGE = "uneil.gif"
+SNAKE_HEAD = "safe"
+SNAKE_TAIL = "freckled"
 
-SNAKE_NAME = "ASDASD"
-
-UP = "up"
-DOWN = "down"
-LEFT = "left"
-RIGHT = "right"
-
-INVALID_MOVE = 0
-HDEPTH = 10
-
-EMPTY = 0
-SNAKE = 1
-FOOD = 2
-SPOILED = 3
-
-TAUNTS = [
+SNAKE_TAUNT = random.choice([
     "I'm crazy, I'm nuts. Just the way my brain works. I'm not normal. I think differently.",
     "I know who I am and what I'm doing in my life and what I've accomplished and continue to accomplish as a performer, as a writer, as an artist, as a person, as a human being.",
     "I grew up below the poverty line; I didn't have as much as other people did. I think it made me stronger as a person, it built my character. Now I have a 4.0 grade point average and I want to go to college, and just become a better person.",
@@ -42,7 +30,20 @@ TAUNTS = [
     "I'm happy with the man I'm becoming.",
     "Cheryl Cole and Katy Perry are two of the hottest girls in the world - and so normal and funny with it. If I was a few years older they are the kind of girls I'd like to date. I want a younger version of Cheryl and Katy - a mixture of the two would be hot.",
     "Canada's the best country in the world."
-]
+])
 
 DIR_NAMES = ['up', 'down', 'left', 'right']
 DIR_VECTORS = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+
+UP = "up"
+DOWN = "down"
+LEFT = "left"
+RIGHT = "right"
+
+INVALID_MOVE = 0
+HDEPTH = 10
+
+EMPTY = 0
+SNAKE = 1
+FOOD = 2
+SPOILED = 3

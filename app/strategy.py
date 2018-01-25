@@ -2,7 +2,7 @@ from utils import dist
 
 
 def general_direction(board, head, health):
-    """ Returns the most 'beneficial' direction to move in """
+    """ Returns the most 'beneficial' direction to move in terms of board position """
 
     # start with general area
     direction = {
@@ -63,6 +63,7 @@ def general_direction(board, head, health):
 
 
 def need_food(board, head, health):
+    """ Determines if we need food and returns potential food that we could get """
     food_to_get = []
     num_snakes = len(board.snakes)
 
