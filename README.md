@@ -1,6 +1,6 @@
 # battlesnake2018
 
-#### what's our strat?
+#### Strategy
 
 tl;dr - pick a point, BFS, floodfill, catch errors, move
 
@@ -12,18 +12,20 @@ This was the basic concept, but there were a lot of overrides – We made some s
 
 We were initially concerned about the 200ms response time limit. Following, we decided to avoid more complex algorithms such as Minimax or A*. However, the average response time for our snake on "production" hardware turned out to be ~30ms.
 
-#### hardware and environment
+### Setup
 
-BtAS was deployed to an m3.medium EC2 instance in the us-east AZ to minimize latency to the Battlesnake gameboard. The app itself was managed by uwsgi, running as a service behind nginx. Although, in hindsight, this is way more complicated than it needed to be.
-
-We decided against Heroku due to the tendency for heroku deployments to go into sleepmode after a period of inactivity.
-
-### you will need...
-
-* a working Python 2.7 development environment ([getting started guide](http://hackercodex.com/guide/python-development-environment-on-mac-osx/))
+* a working Python 3 development environment ([getting started guide](http://hackercodex.com/guide/python-development-environment-on-mac-osx/))
 * [pip](https://pip.pypa.io/en/latest/installing.html) to install Python dependencies
 
-### running BtAS
+### Environment
+
+```
+python3 -m venv .venv
+.venv/bin/activate
+
+```
+
+### Running
 
 A virtualenv is suggested when installing python requirements, although it's not required.
 
@@ -44,10 +46,10 @@ or run it using uwsgi
 $ uwsgi --ini uwsgi/battlesnake-dev.ini # adjust uwsgi params accordingly
 ```
 
-### Environment
+### Linting
 
+From the top-level directory run the following
 ```
-python3 -m venv .venv
-.venv/bin/activate
+flake8 --config setup.cfg
 
 ```
