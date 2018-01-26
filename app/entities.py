@@ -8,8 +8,8 @@ class Snake(object):
     def __init__(self, clone=None, **kwargs):
         if clone:
             # Clone another snake
-            self.attributes = other_snake.attributes.copy()
-            self.coords = other_snake.coords.copy()
+            self.attributes = clone.attributes.copy()
+            self.coords = clone.coords.copy()
         else:
             # Create a snake from a battlesnake snake dict
             self.attributes = {k: kwargs[k] for k in Snake.ATTRIBUTES}
@@ -83,8 +83,7 @@ class Board(object):
                 else:
                     self.set_cell(fud, SPOILED)
 
-
-    def _contested_food (self, pos, snake_id):
+    def _contested_food(self, pos, snake_id):
         current_snake = self.snakes[0]
 
         for snake in self.snakes:
@@ -100,7 +99,7 @@ class Board(object):
         except StopIteration:
             return None
 
-    def set_cell(self, pos, value, meta = None):
+    def set_cell(self, pos, value, meta=None):
         self.cells[pos[0]][pos[1]] = value
         self.meta_cells[pos[0]][pos[1]] = meta
 

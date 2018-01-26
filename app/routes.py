@@ -1,14 +1,12 @@
-from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS
-from .entities import Snake, Board
+from .entities import Board
 from .strategy import general_direction, need_food
 from .utils import timing, get_direction, add, neighbours
 from .algorithms import bfs, find_safest_position, find_food, flood_fill
+from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS
 
 from functools import reduce
 from threading import Thread
 import bottle
-import json
-import os
 import logging
 
 
@@ -37,9 +35,7 @@ def start():
 @bottle.post('/move')
 def move():
     data = {}
-    time_remaining = [150] # leave 50ms for network
-    position = None
-    path = None
+    time_remaining = [150]  # leave 50ms for network
     next_move = list()
     thread_pool = list()
     potential_snake_positions = list()
@@ -54,12 +50,12 @@ def move():
             board = Board(**data)
             snake = board.get_snake(data['you'])
             direction = general_direction(board, snake.head, snake.attributes['health_points'])
-            move = direction # fallback
+            move = direction  # fallback
 
         # Get spots that an enemy snake could move into - adding comment below would make snake more aggressive (needs testing)
         with timing("enemy snake heads", time_remaining):
             for enemy_snake in board.snakes:
-                if enemy_snake.attributes['id'] != snake.attributes['id']: # and enemy_snake.attributes['health_points'] >= snake.attributes['health_points']:
+                if enemy_snake.attributes['id'] != snake.attributes['id']:  # and enemy_snake.attributes['health_points'] >= snake.attributes['health_points']:
                     potential_snake_positions.extend([position for position in enemy_snake.potential_positions() if board.inside(position)])
 
         # Flood fill in each direction to find bad directions - could be modified to correlate to length of our snake (see <= 10)
@@ -69,7 +65,8 @@ def move():
                 if board.inside(cell):
                     count = len(flood_fill(board, cell, False))
                     number_of_squares.append((cell, count))
-                    if count <= 10: potential_snake_positions.append(cell)
+                    if count <= 10:
+                        potential_snake_positions.append(cell)
 
             # If all are bad go with the largest
             if number_of_squares[0][1] <= 10 and number_of_squares[1][1] <= 10 and number_of_squares[2][1] <= 10 and number_of_squares[3][1] <= 10:
@@ -84,7 +81,7 @@ def move():
         if food:
             with timing("find_food", time_remaining):
                 food_positions = find_food(snake.head, snake.attributes['health_points'], board, food)
-                positions = [ position[0] for position in food_positions ]
+                positions = [position[0] for position in food_positions]
 
                 for position in positions:
                     t = Thread(target=bfs(snake.head, position, board, potential_snake_positions, next_move))
@@ -105,7 +102,7 @@ def move():
         else:
             with timing("find_safest_position", time_remaining):
                 positions = find_safest_position(snake.head, direction, board)
-                positions = [ position[0] for position in positions ]
+                positions = [position[0] for position in positions]
 
                 for position in positions:
                     t = Thread(target=bfs(snake.head, position, board, potential_snake_positions, next_move))
@@ -128,10 +125,10 @@ def move():
         logger.info("CHANGED MOVE - floodfill fallback.")
         with timing("floodfill fallback", time_remaining):
             floods = {
-                "up": len(flood_fill(board, (snake.head[0],snake.head[1]-1))),
-                "down": len(flood_fill(board, (snake.head[0],snake.head[1]+1))),
-                "right": len(flood_fill(board, (snake.head[0]+1,snake.head[1]))),
-                "left": len(flood_fill(board, (snake.head[0]-1,snake.head[1])))
+                "up": len(flood_fill(board, (snake.head[0], snake.head[1]-1))),
+                "down": len(flood_fill(board, (snake.head[0], snake.head[1]+1))),
+                "right": len(flood_fill(board, (snake.head[0]+1, snake.head[1]))),
+                "left": len(flood_fill(board, (snake.head[0]-1, snake.head[1])))
             }
 
             move = max(iter(floods.keys()), key=(lambda key: floods[key]))

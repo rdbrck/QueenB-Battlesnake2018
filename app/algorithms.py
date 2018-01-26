@@ -1,27 +1,24 @@
-import heapq
 import time
 import random
 from functools import reduce
-from math import floor, ceil
-from copy import copy, deepcopy
+from math import floor
+from copy import deepcopy
 from collections import deque
 
-from .entities import Board
-from .utils import neighbours, surrounding, dist, mul, sub, timing
-from .constants import DIR_NAMES, DIR_VECTORS, FOOD, EMPTY, SNAKE
+from .utils import neighbours, surrounding, sub
+from .constants import DIR_NAMES, DIR_VECTORS, SNAKE
 
 
-def _rate_cell(cell, board, recurse = False):
+def _rate_cell(cell, board, recurse=False):
     """ rates a cell based on proximity to other snakes, food, the edge of the board, etc """
     cells = [m_cell for m_cell in surrounding(cell) if board.inside(m_cell)]
     cells = [(m_cell, board.get_cell(m_cell)) for m_cell in cells]
     cell_value = reduce(lambda carry, m_cell: carry + [0.5, -5, 2, 0][m_cell[1]], cells, 0)
 
-    if recurse or cell_value < 2: return cell_value
-    else: return cell_value + sum([
-        _rate_cell(m_cell, board) / 10
-        for m_cell in surrounding(cell) if board.inside(m_cell)
-    ])
+    if recurse or cell_value < 2:
+        return cell_value
+    else:
+        return cell_value + sum([_rate_cell(m_cell, board) / 10 for m_cell in surrounding(cell) if board.inside(m_cell)])
 
 
 def flood_fill(board, start_pos, allow_start_in_occupied_cell=False):
@@ -61,7 +58,7 @@ def find_safest_position(current_position, direction, board):
     m_bounds = [(0, 0), (board.width, board.height)]
     max_depth = 10
 
-    def _find_safest(bounds = m_bounds, offset = (0, 0), depth = 0, carry = []):
+    def _find_safest(bounds=m_bounds, offset=(0, 0), depth=0, carry=[]):
         sector_width = (bounds[1][0] - bounds[0][0])
         sector_height = (bounds[1][1] - bounds[0][1])
 
@@ -74,7 +71,7 @@ def find_safest_position(current_position, direction, board):
             return sorted(carry, key=lambda x: x[1])[:3]
 
         # filter cells that we've already rated
-        carry_cells = [ cell[0] for cell in carry ]
+        carry_cells = [cell[0] for cell in carry]
         surrounding_ratings = [
             ((cell[0], cell[1]), _rate_cell((cell[0], cell[1]), board, True))
             for cell in surrounding(center_point)
@@ -92,9 +89,9 @@ def find_safest_position(current_position, direction, board):
 
             # diagonal
             if abs(direction_vector[0]) == abs(direction_vector[1]):
-                direction_vector = list(direction_vector) # tuples are immutable
-                direction_vector[int(time.time()) % 2] = 0 # 300% faster than random.randint()
-                direction_vector = tuple(direction_vector) # back to tuple because DIR_VECTOR contains tuples
+                direction_vector = list(direction_vector)  # tuples are immutable
+                direction_vector[int(time.time()) % 2] = 0  # 300% faster than random.randint()
+                direction_vector = tuple(direction_vector)  # back to tuple because DIR_VECTOR contains tuples
 
             direction = DIR_NAMES[DIR_VECTORS.index(direction_vector)]
 
@@ -105,11 +102,11 @@ def find_safest_position(current_position, direction, board):
                 new_bounds = [offset, (bounds[1][0], bounds[1][1])]
             elif direction == "left":
                 new_bounds = [offset, (center_point[0], bounds[1][1])]
-            else: # right
+            else:  # right
                 offset = (center_point[0], offset[1])
                 new_bounds = [offset, (bounds[0][0], bounds[1][1])]
 
-        return _find_safest(new_bounds, offset, depth + 1, carry = carry)
+        return _find_safest(new_bounds, offset, depth + 1, carry=carry)
 
     # set up initial bounds
     if direction == "up":
@@ -118,7 +115,7 @@ def find_safest_position(current_position, direction, board):
         bounds = [(0, current_position[1]), (board.width, board.height)]
     elif direction == "right":
         bounds = [(current_position[0], 0), (board.width, board.height)]
-    else: # left
+    else:  # left
         bounds = [(0, 0), (current_position[0], board.height)]
 
     return _find_safest(bounds, bounds[0])
@@ -127,7 +124,7 @@ def find_safest_position(current_position, direction, board):
 def find_food(current_position, health_remaining, board, board_food):
     """ finds and rates food positions """
     rated_food = [(food, _rate_cell(food, board, True)) for food in board_food]
-    return sorted(rated_food, key = lambda x: x[1], reverse=True)
+    return sorted(rated_food, key=lambda x: x[1], reverse=True)
 
 
 def bfs(starting_position, target_position, board, exclude, return_list):
@@ -144,8 +141,8 @@ def bfs(starting_position, target_position, board, exclude, return_list):
     """
     def _get_path_from_nodes(node):
         path = []
-        while(node != None):
-            path.insert(0, (node[0], node[1])) # Reverse
+        while(node):
+            path.insert(0, (node[0], node[1]))  # Reverse
             node = node[2]
         return return_list.append(path[1:])
 
@@ -164,17 +161,17 @@ def bfs(starting_position, target_position, board, exclude, return_list):
         x = node[0]
         y = node[1]
 
-        if board_copy.inside((x, y)) == True:
-            if (x, y) == target_position: # If we reach target_position
-                return _get_path_from_nodes(node) # Rebuild path
+        if board_copy.inside((x, y)):
+            if (x, y) == target_position:  # If we reach target_position
+                return _get_path_from_nodes(node)  # Rebuild path
 
-            if (board_copy.outside((x, y)) == True or board_copy.get_cell((x, y)) == "B" or board_copy.get_cell((x, y)) == 1) and not (x, y) == starting_position: # Snakes
+            if (board_copy.outside((x, y)) or board_copy.get_cell((x, y)) == "B" or board_copy.get_cell((x, y)) == 1) and not (x, y) == starting_position:  # Snakes
                 continue
 
-            board_copy.set_cell((x, y), "B") # Mark as explored
+            board_copy.set_cell((x, y), "B")  # Mark as explored
 
             for i in neighbours(node):
                 if board.inside((i[0], i[1])):
                     queue.append((i[0], i[1], node))
 
-    return None # No path
+    return None  # No path
