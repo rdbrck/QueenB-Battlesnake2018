@@ -1,10 +1,11 @@
-from constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS
-from entities import Snake, Board
-from strategy import general_direction, need_food
-from utils import timing, get_direction, add, neighbours
-from algorithms import bfs, find_safest_position, find_food, flood_fill
-from threading import Thread
+from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS
+from .entities import Snake, Board
+from .strategy import general_direction, need_food
+from .utils import timing, get_direction, add, neighbours
+from .algorithms import bfs, find_safest_position, find_food, flood_fill
 
+from functools import reduce
+from threading import Thread
 import bottle
 import json
 import os
@@ -95,7 +96,7 @@ def move():
                     thread.start()
                     thread.join()
 
-                next_move = filter(lambda path: not len(path) == 0, next_move)
+                next_move = [path for path in next_move if not len(path) == 0]
 
                 path = min(next_move, key=len)
                 move = get_direction(snake.head, path[0])
@@ -133,7 +134,7 @@ def move():
                 "left": len(flood_fill(board, (snake.head[0]-1,snake.head[1])))
             }
 
-            move = max(floods.iterkeys(), key=(lambda key: floods[key]))
+            move = max(iter(floods.keys()), key=(lambda key: floods[key]))
 
     # Verify we didn't pick a bad move (wall or snake) - shouldn't happen but there if needed
     with timing("verify move", time_remaining):
