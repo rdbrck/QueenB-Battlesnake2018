@@ -10,6 +10,7 @@ import bottle
 import logging
 
 
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
@@ -52,7 +53,11 @@ def move():
             snake = board.get_snake(data['you']['id'])
             direction = general_direction(board, snake.head, snake.attributes['health'])
             move = direction  # fallback
+    except Exception as e:
+        logger.error("Failure handling request - %s" % e.message)
+        return {'move': 'up'}  # In this case we don't know what the board looks like so guess
 
+    try:
         # Get spots that an enemy snake could move into - adding comment below would make snake more aggressive (needs testing)
         with timing("enemy snake heads", time_remaining):
             for enemy_snake in board.snakes:
