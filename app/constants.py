@@ -3,6 +3,7 @@ import random
 
 SNAKE_NAME = "BETTER THAN ALEKSIY\'S SNAKE"
 SNAKE_COLOR = "#ff0000"
+SNAKE_SECONDARY_COLOR = "#ff0000"
 SNAKE_IMAGE = "uneil.gif"
 SNAKE_HEAD = "safe"
 SNAKE_TAIL = "freckled"

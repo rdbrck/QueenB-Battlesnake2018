@@ -3,7 +3,7 @@ from .constants import DIR_VECTORS, EMPTY, FOOD, SNAKE, SPOILED
 
 
 class Snake(object):
-    ATTRIBUTES = ('id', 'health_points')
+    ATTRIBUTES = ('id', 'health', 'length')
 
     def __init__(self, clone=None, **kwargs):
         if clone:
@@ -13,15 +13,15 @@ class Snake(object):
         else:
             # Create a snake from a battlesnake snake dict
             self.attributes = {k: kwargs[k] for k in Snake.ATTRIBUTES}
-            self.coords = list(map(tuple, kwargs['coords']))
+            self.coords = list((p['x'], p['y']) for p in kwargs['body']['data'])
+
+    def __len__(self):
+        return self.length
 
     def _get_direction(self):
         assert len(self.coords) > 1
         return sub(self.coords[0], self.coords[1])
     direction = property(_get_direction)
-
-    def __len__(self):
-        return len(self.coords)
 
     def _get_head(self):
         return self.coords[0]
@@ -69,8 +69,8 @@ class Board(object):
                 self.meta_cells.append([None] * self.height)
 
             # Only take snakes that are alive
-            self.snakes = [Snake(**s) for s in kwargs['snakes']]
-            self.food = list(map(tuple, kwargs['food']))
+            self.snakes = [Snake(**s) for s in kwargs['snakes']['data']]
+            self.food = list((p['x'], p['y']) for p in kwargs['food']['data'])
 
             # Fill out initially occupied cells on board
             for snake in self.snakes:
@@ -78,7 +78,7 @@ class Board(object):
                     self.set_cell(pos, SNAKE)
 
             for fud in self.food:
-                if self._contested_food(fud, kwargs['you']):
+                if self._contested_food(fud, kwargs['you']['id']):
                     self.set_cell(fud, FOOD)
                 else:
                     self.set_cell(fud, SPOILED)

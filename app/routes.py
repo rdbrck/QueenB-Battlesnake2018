@@ -24,6 +24,7 @@ def start():
     logger.info("GAME START")
     return {
         'color': SNAKE_COLOR,
+        'secondary_color': SNAKE_SECONDARY_COLOR,
         'taunt': SNAKE_TAUNT,
         'head_url': ('http://%s/static/%s' % (bottle.request.get_header('host'), SNAKE_IMAGE)),
         'name': SNAKE_NAME,
@@ -48,14 +49,14 @@ def move():
         # Get general direction and fallback move
         with timing("data parsing", time_remaining):
             board = Board(**data)
-            snake = board.get_snake(data['you'])
-            direction = general_direction(board, snake.head, snake.attributes['health_points'])
+            snake = board.get_snake(data['you']['id'])
+            direction = general_direction(board, snake.head, snake.attributes['health'])
             move = direction  # fallback
 
         # Get spots that an enemy snake could move into - adding comment below would make snake more aggressive (needs testing)
         with timing("enemy snake heads", time_remaining):
             for enemy_snake in board.snakes:
-                if enemy_snake.attributes['id'] != snake.attributes['id']:  # and enemy_snake.attributes['health_points'] >= snake.attributes['health_points']:
+                if enemy_snake.attributes['id'] != snake.attributes['id']:  # and enemy_snake.attributes['health'] >= snake.attributes['health']:
                     potential_snake_positions.extend([position for position in enemy_snake.potential_positions() if board.inside(position)])
 
         # Flood fill in each direction to find bad directions - could be modified to correlate to length of our snake (see <= 10)
@@ -75,12 +76,12 @@ def move():
 
         # Check if we need food (or if there is any that we can reach)
         with timing("need_food", time_remaining):
-            food = need_food(board, snake.head, snake.attributes['health_points'])
+            food = need_food(board, snake.head, snake.attributes['health'])
 
         # If we need food find a good path to said food
         if food:
             with timing("find_food", time_remaining):
-                food_positions = find_food(snake.head, snake.attributes['health_points'], board, food)
+                food_positions = find_food(snake.head, snake.attributes['health'], board, food)
                 positions = [position[0] for position in food_positions]
 
                 for position in positions:
@@ -144,6 +145,5 @@ def move():
                     move = direction
 
     return {
-        'move': move,
-        'taunt': SNAKE_TAUNT
+        'move': move  # 'up' | 'down' | 'left' | 'right'
     }
