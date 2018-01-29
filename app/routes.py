@@ -2,7 +2,7 @@ from .entities import Board
 from .strategy import general_direction, need_food
 from .utils import timing, get_direction, add, neighbours
 from .algorithms import bfs, find_safest_position, find_food, flood_fill
-from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS
+from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS, SNAKE_SECONDARY_COLOR
 
 from functools import reduce
 from threading import Thread
