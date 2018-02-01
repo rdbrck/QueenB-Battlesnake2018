@@ -21,6 +21,7 @@ def static(path):
 
 @bottle.route('/')
 @bottle.post('/start')
+@bottle.post('/start/')
 def start():
     logger.info("GAME START")
     return {
@@ -35,6 +36,7 @@ def start():
 
 
 @bottle.post('/move')
+@bottle.post('/move/')
 def move():
     data = {}
     time_remaining = [150]  # leave 50ms for network
