@@ -1,12 +1,6 @@
 import unittest
-import ujson
 
-
-TEST_INSTANCE = 'http://0.0.0.0:8080/'
-
-
-with open('./move.json') as move:
-    MOVE_DEFAULT = ujson.load(move)
+from utils import TEST_INSTANCE, MOVE_DEFAULT
 
 
 class TestAvoidanceLogic(unittest.TestCase):
