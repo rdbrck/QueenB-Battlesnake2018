@@ -6,7 +6,7 @@
   },
   "health": 100,
   "id": "58a0142f-4cd7-4d35-9b17-815ec8ff8e70",
-  "length": 1,
+  "length": 0,
   "name": "Test Snake",
   "object": "snake",
   "taunt": ""

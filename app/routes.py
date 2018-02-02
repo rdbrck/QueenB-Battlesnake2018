@@ -56,7 +56,7 @@ def move():
             direction = general_direction(board, snake.head, snake.attributes['health'])
             move = direction  # fallback
     except Exception as e:
-        logger.error("Failure handling request - %s" % e.message)
+        logger.error("Failure handling request - %s" % str(e))
         return {'move': 'up'}  # In this case we don't know what the board looks like so guess
 
     try:
@@ -126,7 +126,7 @@ def move():
                 move = get_direction(snake.head, path[0])
 
     except Exception as e:
-        logger.error("Code failure - %s" % e.message)
+        logger.error("Code failure - %s" % str(e))
 
     # If code above failed then fallback to a floodfill move
     if len(next_move) == 0:
