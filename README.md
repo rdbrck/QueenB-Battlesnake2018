@@ -60,3 +60,10 @@ From the top-level directory run the following
 ```
 flake8 --config setup.cfg
 ```
+
+### Static Tests
+
+From the /tests/static directory run the following (you currently need the snake running at 0.0.0.0:8080)
+```
+python test.py
+```
