@@ -5,18 +5,17 @@ import random
 TEST_INSTANCE = 'http://0.0.0.0:8080/move'
 TEST_SNAKE_ID = '58a0142f-4cd7-4d35-9b17-815ec8ff8e70'
 
-with open('./move.json') as move:
-    MOVE_DEFAULT = ujson.load(move)
 
-with open('./snake.json') as snake:
-    SNAKE_DEFAULT = ujson.load(snake)
+class TestGameData(object):
+    def __init__(self, **kwargs):
+        with open('./move.json') as move:
+            self.data = ujson.load(move)
 
-with open('./point.json') as point:
-    POINT_DEFAULT = ujson.load(point)
+        with open('./snake.json') as snake:
+            self.snake_default = ujson.load(snake)
 
-
-class TestGameData():
-    data = MOVE_DEFAULT.copy()
+        with open('./point.json') as point:
+            self.point_default = ujson.load(point)
 
     def get_food(self):
         coords = []
@@ -27,7 +26,7 @@ class TestGameData():
     def set_food(self, coords):
         foods = []
         for coord in coords:
-            food = POINT_DEFAULT.copy()
+            food = self.point_default.copy()
             food['x'] = coord[0]
             food['y'] = coord[1]
             foods.append(food)
@@ -41,9 +40,9 @@ class TestGameData():
         return self.data['you']['health'], coords
 
     def set_self(self, coords, health=None):
-        snake = SNAKE_DEFAULT.copy()
+        snake = self.snake_default.copy()
         for coord in coords:
-            point = POINT_DEFAULT.copy()
+            point = self.point_default.copy()
             point['x'] = coord[0]
             point['y'] = coord[1]
             snake['body']['data'].append(point)
@@ -63,10 +62,10 @@ class TestGameData():
         self.data['snakes']['data'] = potential_snakes
 
     def add_enemy(self, coords, health=None):
-        snake = SNAKE_DEFAULT.copy()
+        snake = self.snake_default.copy()
         snake['id'] = ''.join(random.choice('0123456789') for x in range(5))
         for coord in coords:
-            point = POINT_DEFAULT.copy()
+            point = self.point_default.copy()
             point['x'] = coord[0]
             point['y'] = coord[1]
             snake['body']['data'].append(point)
