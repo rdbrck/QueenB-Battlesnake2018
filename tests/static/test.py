@@ -1,3 +1,4 @@
+# flake8: noqa
 from test_food import *
 from test_avoidance import *
 from test_attacking import *
