@@ -134,7 +134,7 @@ class TestFoodLogic(unittest.TestCase):
         self.assertTrue(response.json()['move'] != 'left')
 
     def test_contested_far(self):
-        """ contested food - far - should go for far one """
+        """ contested food - far - should go for alternate """
         data = TestGameData()
         data.set_self([(5, 5), (5, 6), (5, 7)], health=30)
         data.set_food([(0, 5), (9, 5)])
