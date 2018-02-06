@@ -60,3 +60,11 @@ From the top-level directory run the following
 ```
 flake8 --config setup.cfg
 ```
+
+### Static Tests
+
+From the /tests/static directory run the following.
+Currently tests a snake that is running at a specified url in utils.py's TEST_INSTANCE.
+```
+python test.py
+```

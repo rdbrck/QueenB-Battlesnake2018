@@ -1,0 +1,18 @@
+{
+  "food": {
+    "data": [
+    ],
+    "object": "list"
+  },
+  "height": 20,
+  "id": 1,
+  "object": "world",
+  "snakes": {
+    "data": [
+    ],
+    "object": "list"
+  },
+  "turn": 0,
+  "width": 20,
+  "you": {}
+}
