@@ -63,7 +63,8 @@ flake8 --config setup.cfg
 
 ### Static Tests
 
-From the /tests/static directory run the following (you currently need the snake running at 0.0.0.0:8080)
+From the /tests/static directory run the following.
+Currently tests a snake that is running at a specified url in utils.py's TEST_INSTANCE.
 ```
 python test.py
 ```
