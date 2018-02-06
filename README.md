@@ -2,6 +2,8 @@
 
 ### Strategy
 
+[Strategy Brainstorming](docs/strategy-brainstorm.md) is kept in the repo.
+
 tl;dr - pick a point, BFS, floodfill, catch errors, move
 
 Our strategy was to use a local search algorithm with everything we could think added in.
