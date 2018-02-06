@@ -1,6 +1,6 @@
 # battlesnake2018
 
-#### Strategy
+### Strategy
 
 tl;dr - pick a point, BFS, floodfill, catch errors, move
 
@@ -12,36 +12,44 @@ This was the basic concept, but there were a lot of overrides – We made some s
 
 We were initially concerned about the 200ms response time limit. Following, we decided to avoid more complex algorithms such as Minimax or A*. However, the average response time for our snake on "production" hardware turned out to be ~30ms.
 
-### Setup
+### Requirements
+
+* docker and optionally docker-compose
+
+- or -
 
 * a working Python 3 development environment ([getting started guide](http://hackercodex.com/guide/python-development-environment-on-mac-osx/))
 * [pip](https://pip.pypa.io/en/latest/installing.html) to install Python dependencies
 
-### Environment
+### Running
+You can run this with docker or locally on your computer.
 
+#### Docker
+```
+docker-compose build
+docker-compose up
+```
+
+#### Local
+
+A virtualenv is suggested when installing python requirements, although it's not required.
 ```
 python3 -m venv .venv
 .venv/bin/activate
 
 ```
 
-### Running
-
-A virtualenv is suggested when installing python requirements, although it's not required.
-
 Install dependencies using [pip](https://pip.pypa.io/en/latest/installing.html):
 ```
 $ pip install -r requirements.txt
 ```
 
-then either run the app directly
-
+Then either run the app directly
 ```
 $ python app.py # supply PORT to override default
 ```
 
-or run it using uwsgi
-
+Or using uwsgi
 ```
 $ uwsgi --ini uwsgi/battlesnake-dev.ini # adjust uwsgi params accordingly
 ```
@@ -51,5 +59,12 @@ $ uwsgi --ini uwsgi/battlesnake-dev.ini # adjust uwsgi params accordingly
 From the top-level directory run the following
 ```
 flake8 --config setup.cfg
+```
 
+### Static Tests
+
+From the /tests/static directory run the following.
+Currently tests a snake that is running at a specified url in utils.py's TEST_INSTANCE.
+```
+python test.py
 ```
