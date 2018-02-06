@@ -2,7 +2,7 @@ from .entities import Board
 from .strategy import general_direction, need_food
 from .utils import timing, get_direction, add, neighbours
 from .algorithms import bfs, find_safest_position, find_food, flood_fill
-from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS, SNAKE_SECONDARY_COLOR
+from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, DIR_NAMES, DIR_VECTORS, SNAKE_SECONDARY_COLOR
 
 from functools import reduce
 from threading import Thread
@@ -14,21 +14,15 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
-@bottle.route('/static/<path:path>')
-def static(path):
-    return bottle.static_file(path, root='static/')
-
-
 @bottle.route('/')
 @bottle.post('/start')
-@bottle.post('/start/')
 def start():
     logger.info("GAME START")
     return {
         'color': SNAKE_COLOR,
         'secondary_color': SNAKE_SECONDARY_COLOR,
         'taunt': SNAKE_TAUNT,
-        'head_url': ('http://%s/static/%s' % (bottle.request.get_header('host'), SNAKE_IMAGE)),
+        'head_url': '',
         'name': SNAKE_NAME,
         'head_type': SNAKE_HEAD,
         'tail_type': SNAKE_TAIL
@@ -36,7 +30,6 @@ def start():
 
 
 @bottle.post('/move')
-@bottle.post('/move/')
 def move():
     data = {}
     time_remaining = [150]  # leave 50ms for network
@@ -56,7 +49,7 @@ def move():
             direction = general_direction(board, snake.head, snake.attributes['health'])
             move = direction  # fallback
     except Exception as e:
-        logger.error("Failure handling request - %s" % str(e))
+        logger.error("Failure handling request - %s" % e.message)
         return {'move': 'up'}  # In this case we don't know what the board looks like so guess
 
     try:
@@ -126,7 +119,7 @@ def move():
                 move = get_direction(snake.head, path[0])
 
     except Exception as e:
-        logger.error("Code failure - %s" % str(e))
+        logger.error("Code failure - %s" % e.message)
 
     # If code above failed then fallback to a floodfill move
     if len(next_move) == 0:
