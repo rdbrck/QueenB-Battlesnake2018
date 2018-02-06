@@ -1,5 +1,7 @@
 # battlesnake2018
 
+[Strategy Brainstorming](docs/strategy-brainstorm.md) is kept in the repo.
+
 #### what's our strat?
 
 tl;dr - pick a point, BFS, floodfill, catch errors, move
