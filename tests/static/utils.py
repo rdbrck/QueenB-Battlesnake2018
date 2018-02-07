@@ -3,7 +3,7 @@ import random
 import copy
 
 
-TEST_INSTANCE = 'http://0.0.0.0:8080/move'
+TEST_INSTANCE = 'http://127.0.0.1:9000/move'
 TEST_SNAKE_ID = '58a0142f-4cd7-4d35-9b17-815ec8ff8e70'
 
 
