@@ -1,10 +1,10 @@
-import unittest
-import requests
+# import unittest
+# import requests
 
-from utils import TEST_INSTANCE, TestGameData
+# from utils import TEST_INSTANCE, TestGameData
 
 
-class TestAttackLogic(unittest.TestCase):
+# class TestAttackLogic(unittest.TestCase):
     # def test_head_to_head_bigger(self):
     #     """ attack in a head to head fashion """
     #     data = TestGameData()
@@ -22,14 +22,14 @@ class TestAttackLogic(unittest.TestCase):
     #     response = requests.post(TEST_INSTANCE,  json=data.data)
     #     self.assertEqual(response.json()['move'], 'left')
 
-    def test_enemy_between_snake_wall(self):
-        """ attack an enemy snake when it is between you and the wall """
-        data = TestGameData()
-        data.set_self([(1, 5), (1, 6), (1, 7)])
-        data.add_enemy([(0, 7), (0, 8)])
+    # def test_enemy_between_snake_wall(self):
+    #     """ attack an enemy snake when it is between you and the wall """
+    #     data = TestGameData()
+    #     data.set_self([(1, 5), (1, 6), (1, 7)])
+    #     data.add_enemy([(0, 7), (0, 8)])
 
-        response = requests.post(TEST_INSTANCE,  json=data.data)
-        self.assertEqual(response.json()['move'], 'left')
+    #     response = requests.post(TEST_INSTANCE,  json=data.data)
+    #     self.assertEqual(response.json()['move'], 'left')
 
     # def test_enemy_between_snake_wall_collision(self):
     #     """ attack an enemy with head collision when between you and the wall """
