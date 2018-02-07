@@ -1,4 +1,4 @@
-from .utils import dist, neighbours
+from .utils import dist, neighbours, translate_to_direction
 from .constants import FOOD_CLOSE_HEALTH, FOOD_HUNGRY_HEALTH
 
 
@@ -99,8 +99,17 @@ def _touching_snake(enemy, snake):
     return False
 
 
+def _same_direction(enemy, snake):
+    """ returns true when a two snakes last move were the same (pointing in same direction) """
+    return translate_to_direction(enemy.coords[0], enemy.coords[1]) == translate_to_direction(snake.coords[0], snake.coords[1])
+
+
 def _sandwiched(board, enemy):
-    if enemy.head[0] - 1 and enemy.head[0] + 1
+    """ return true if snake is sandwiched in either x or y plane """
+    sandwiched_column = (not board.vacant(enemy.head[0]-1, enemy.head[1]) and not board.vacant(enemy.head[0]+1, enemy.head[1]))
+    sandwiched_row = (not board.vacant(enemy.head[0], enemy.head[1]-1) and not board.vacant(enemy.head[0], enemy.head[1]+1))
+
+    return sandwiched_row != sandwiched_column:
 
 
 def check_attack(board, potential_snake_positions, bad_positions, snake):
@@ -113,11 +122,13 @@ def check_attack(board, potential_snake_positions, bad_positions, snake):
         if pos in potential_snake_positions and pos not in bad_positions:
             possible_attacks.append(pos)
 
-    # add potential attack positions where enemy snake is between us and a wall or another snake (only applies if we aren't in the corner)
+    # add potential attack positions where enemy snake is between us and a wall or another snake
     for enemy in enemy_snakes:
-        # if the enemy snake isn't touching our snakes tail then we cannot attack it
-        if not _touching_snake(enemy, snake) or not _sandwiched(board, enemy):
+        # filters that must pass for us to perform this attack
+        if not _touching_snake(enemy, snake) or not _sandwiched(board, enemy) or not _same_direction(enemy, snake):
             continue
+
+
 
 
     # remove possible attack spots where the enemy snake is equal in size or bigger
