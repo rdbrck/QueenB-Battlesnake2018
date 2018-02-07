@@ -1,0 +1,28 @@
+version: '2'
+services:
+    old_self:
+        build:
+            context: ./old_self
+        command: "python3 /var/www/app.py"
+        volumes:
+            - ./old_self:/var/www
+        ports:
+            - "5000:5000"
+    old_devin:
+        build:
+            context: ./old_devin
+        command: "python /var/www/main.py"
+        volumes:
+            - ./old_devin:/var/www
+        ports:
+            - "6000:6000"
+    old_stewart:
+        build:
+            context: ./old_stewart
+        ports:
+            - "7000:7000"
+    aleksiys:
+        build:
+            context: ./aleksiys2017
+        ports:
+            - "8000:9001"

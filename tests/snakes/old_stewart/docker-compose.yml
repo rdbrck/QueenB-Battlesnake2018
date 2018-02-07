@@ -1,15 +1,6 @@
-version: "2"
+version: '2'
 services:
-  node:
-    image: "node:8"
-    user: "node"
-    working_dir: /home/node/app
-    environment:
-      - NODE_ENV=production
-    volumes:
-      - ./:/home/node/app
-    expose:
-      - "7000"
-    ports:
-      - "7000:7000"
-    command: "npm start"
+    web:
+        build: .
+        ports:
+            - "7000:7000"
