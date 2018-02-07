@@ -1,9 +1,9 @@
-from .utils import dist
+from .utils import dist, neighbours
+from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_HUNGRY_HEALTH, SPOILED
 
 
 def general_direction(board, head, health):
     """ Returns the most 'beneficial' direction to move in terms of board position """
-
     # start with general area
     direction = {
         "up": 5000 / (dist(head, (head[0], 0))+1),
@@ -64,30 +64,28 @@ def general_direction(board, head, health):
     return min(iter(direction.keys()), key=(lambda key: direction[key]))
 
 
-def need_food(board, head, health):
-    """ Determines if we need food and returns potential food that we could get """
+def need_food(board, bad_positions, snake):
+    """ Determines if we need food and returns potential food that we can get """
     food_to_get = []
-    num_snakes = len(board.snakes)
 
-    # if we really need food go for it even if it's not 'safe'
-    if health < 50:
-        for food in board.food:
-            if (health + dist(head, food)) < 50:
-                food_to_get.append(food)
-
-    if len(food_to_get) > 0:
-        return food_to_get
-
-    # food that is considered 'safe'
-    safe_food = [fud for fud in board.food if board.get_cell(fud) != 3]
+    # food that is not contested (we are the closest)
+    safe_food = [fud for fud in board.food if board.get_cell(fud) != SPOILED]
 
     # always go for safe food even if we kind of need it
     for food in safe_food:
-        # get food if it's close (more aggresive when more snakes on board)
-        if dist(food, head) <= 2 and health < (((num_snakes + 1) * 7) + 15):
+        # prioritize safe food if it's close and we are a little hungry otherwise wait a little bit
+        if dist(food, snake.head) <= FOOD_CLOSE_DIST and snake.attributes['health'] < FOOD_CLOSE_HEALTH:
             food_to_get.append(food)
-        # get food if we kind of need it
-        elif health < 50:
+        elif dist(food, snake.head) <= snake.attributes['health'] and snake.attributes['health'] < FOOD_HUNGRY_HEALTH:
             food_to_get.append(food)
+
+    # if there is no safe food and we are relatively hungry then move toward contested food
+    if len(food_to_get) == 0 and snake.attributes['health'] < FOOD_HUNGRY_HEALTH:
+        contested_food = [fud for fud in board.food if board.get_cell(fud) == SPOILED]
+
+        # If it's contested but not going to get immediately taken and we are in possible distance of getting it then move one step closer
+        for food in contested_food:
+            if dist(food, snake.head) <= snake.attributes['health'] and food not in bad_positions:
+                food_to_get.append(food)                
 
     return (food_to_get if len(food_to_get) > 0 else None)

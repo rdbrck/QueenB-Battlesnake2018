@@ -49,3 +49,7 @@ EMPTY = 0
 SNAKE = 1
 FOOD = 2
 SPOILED = 3
+
+FOOD_CLOSE_HEALTH = 85  # When we should stop ignoring food
+FOOD_HUNGRY_HEALTH = 50  # When we should start going for contested food
+FOOD_CLOSE_DIST = 2  # How many moves away is a close piece of food
