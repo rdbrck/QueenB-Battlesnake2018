@@ -17,7 +17,7 @@ def start():
     return {
         'color': '#002800',
         'taunt': 'I am Groot!',
-        'head_url': '',
+        'head_url': 'https://www.popsci.com/sites/popsci.com/files/styles/1000_1x_/public/images/2015/03/snake.jpg?itok=oi82kZXn',
         'name': 'Groot',
         'head_type' : 'shades',
         'tail_type' : 'round-bum'
