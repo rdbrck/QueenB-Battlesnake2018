@@ -67,7 +67,7 @@ def move():
 
         # Flood fill in each direction to find bad directions - could be modified to correlate to length of our snake (see <= 10)
         with timing("intial flood fill", time_remaining):
-            number_of_squares = list()
+            number_of_squares = []
             for cell in neighbours(snake.head):
                 if board.inside(cell):
                     count = len(flood_fill(board, cell, False))

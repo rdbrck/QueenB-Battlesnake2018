@@ -76,3 +76,67 @@ class TestAvoidanceLogic(unittest.TestCase):
 
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertTrue(response.json()['move'] != 'left')
+
+    def test_stuck_between_corner_and_snake_last_chance(self):
+        """ only chance for survival is to go where bigger snake's head might be """
+        data = TestGameData()
+        data.set_self([(0, 0), (0, 1), (0, 2)], health=10)
+        data.add_enemy([(1, 1), (1, 2), (1, 3), (1, 4)])
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertEqual(response.json()['move'], 'right')
+
+    def test_stuck_between_two_snakes_turn_into_shorter_one(self):
+        """ stuck between two snakes collide head on with shorter one """
+        data = TestGameData()
+        data.set_self([(4, 0), (4, 1), (4, 2)], health=10)
+        data.add_enemy([(5, 1), (5, 2), (5, 3), (5, 4)])
+        data.add_enemy([(3, 1), (3, 2)])
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertEqual(response.json()['move'], 'left')
+
+    def test_corner_must_turn_into_tail(self):
+        """ only option is to turn where tail could be if enemy grows """
+        data = TestGameData()
+        data.set_self([(0, 0), (0, 1), (0, 2)], health=10)
+        data.add_enemy([(1, 1), (1, 0)])
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertEqual(response.json()['move'], 'right')
+
+    def test_dont_trap_self(self):
+        """ do not enter boxed off region that is smaller than body """
+        data = TestGameData()
+        data.set_self([(0, 3), (1, 3), (2, 3), (3, 3), (4, 3), (4, 2), (4, 1), (4, 0), (5, 0), (5, 1), (5, 2), (5, 3), (5, 4), (5, 5), (5, 6), (5, 7)], health=10)
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertEqual(response.json()['move'], 'down')
+
+    def test_trap_self_if_absolutely_necessary(self):
+        """ enter boxed off region that is smaller than body if other paths kill us """
+        data = TestGameData()
+        data.set_self([(0, 3), (1, 3), (2, 3), (3, 3), (4, 3), (4, 2), (4, 1), (4, 0), (5, 0), (5, 1), (5, 2), (5, 3), (5, 4), (5, 5), (5, 6), (5, 7)], health=10)
+        data.add_enemy([(0, 5), (0, 4), (1, 4)])
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertEqual(response.json()['move'], 'up')
+
+    def test_collide_head_on_with_smaller_rather_than_trap(self):
+        """ choose head on collision with smaller snake rather than go into trap """
+        data = TestGameData()
+        data.set_self([(0, 3), (1, 3), (2, 3), (3, 3), (4, 3), (4, 2), (4, 1), (4, 0), (5, 0), (5, 1), (5, 2), (5, 3), (5, 4), (5, 5), (5, 6), (5, 7)], health=10)
+        data.add_enemy([(1, 4), (2, 4)])
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertEqual(response.json()['move'], 'down')
+
+    def test_avoid_moving_into_possible_cut_off_trap(self):
+        """ do not move into a tunnel that could easily become a trap """
+        data = TestGameData()
+        data.set_self([(0, 3), (1, 3), (2, 3)], health=10)
+        data.add_enemy([(1, 6), (1, 5), (1, 4), (2, 4), (3, 4)])
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertEqual(response.json()['move'], 'up')
+
