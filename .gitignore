@@ -1,4 +1,6 @@
 *.pyc
 .venv
+venv
+.vscode
 *.bak
 __pycache__
