@@ -67,16 +67,25 @@ def move():
 
         # Flood fill in each direction to find bad directions - could be modified to correlate to length of our snake (see <= 10)
         with timing("intial flood fill", time_remaining):
-            number_of_squares = []
+            number_of_squares = list()
+            body_len = snake.attributes.get('length',10)
             for cell in neighbours(snake.head):
                 if board.inside(cell):
                     count = len(flood_fill(board, cell, False))
                     number_of_squares.append((cell, count))
+<<<<<<< b42cf81f38cc90567f51a18ca6530f2753f0018d
                     if count <= 10:
                         bad_positions.append(cell)
 
             # If all are bad don't set the largest as bad
             if number_of_squares[0][1] <= 10 and number_of_squares[1][1] <= 10 and number_of_squares[2][1] <= 10 and number_of_squares[3][1] <= 10:
+=======
+                    if count <= body_len:
+                        potential_snake_positions.append(cell)
+
+            # If all are bad go with the largest
+            if number_of_squares[0][1] <= body_len and number_of_squares[1][1] <= body_len and number_of_squares[2][1] <= body_len and number_of_squares[3][1] <= body_len:
+>>>>>>> attack-avoidance: more tests
                 largest = reduce(lambda carry, direction: carry if carry[1] > direction[1] else direction, number_of_squares, number_of_squares[0])
                 bad_positions.remove(largest[0])
 
