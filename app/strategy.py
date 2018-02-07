@@ -128,6 +128,7 @@ def check_attack(board, potential_snake_positions, bad_positions, snake):
         if not _touching_snake(enemy, snake) or not _sandwiched(board, enemy) or not _same_direction(enemy, snake):
             continue
 
+        
 
 
 
