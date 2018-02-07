@@ -84,7 +84,7 @@ def move():
         # Check if we need food (or if there is any that we can reach)
         with timing("need_food", time_remaining):
             food = need_food(board, bad_positions, snake)
-            
+
         # If we need food find a good path to said food (prioritize over attacking)
         if food:
             with timing("find_food", time_remaining):
