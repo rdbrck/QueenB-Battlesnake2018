@@ -1,5 +1,5 @@
 from .utils import dist, neighbours
-from .constants import FOOD_CLOSE_HEALTH, FOOD_HUNGRY_HEALTH
+from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_HUNGRY_HEALTH, SPOILED
 
 
 def general_direction(board, head, health):
@@ -69,19 +69,19 @@ def need_food(board, bad_positions, snake):
     food_to_get = []
 
     # food that is not contested (we are the closest)
-    safe_food = [fud for fud in board.food if board.get_cell(fud) != 3]
+    safe_food = [fud for fud in board.food if board.get_cell(fud) != SPOILED]
 
     # always go for safe food even if we kind of need it
     for food in safe_food:
         # prioritize safe food if it's close and we are a little hungry otherwise wait a little bit
-        if dist(food, snake.head) <= 2 and snake.attributes['health'] < FOOD_CLOSE_HEALTH:
+        if dist(food, snake.head) <= FOOD_CLOSE_DIST and snake.attributes['health'] < FOOD_CLOSE_HEALTH:
             food_to_get.append(food)
         elif dist(food, snake.head) <= snake.attributes['health'] and snake.attributes['health'] < FOOD_HUNGRY_HEALTH:
             food_to_get.append(food)
 
     # if there is no safe food and we are relatively hungry then move toward contested food
     if len(food_to_get) == 0 and snake.attributes['health'] < FOOD_HUNGRY_HEALTH:
-        contested_food = [fud for fud in board.food if board.get_cell(fud) == 3]
+        contested_food = [fud for fud in board.food if board.get_cell(fud) == SPOILED]
 
         # If it's contested but not going to get immediately taken and we are in possible distance of getting it then move one step closer
         for food in contested_food:
