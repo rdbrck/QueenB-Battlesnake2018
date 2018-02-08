@@ -1,5 +1,6 @@
 # flake8: noqa
 import random
+import logging
 
 SNAKE_NAME = "BETTER THAN ALEKSIY\'S SNAKE"
 SNAKE_COLOR = "#ff0000"
@@ -60,3 +61,5 @@ FOOD_HUNGRY_HEALTH = 70  # When we should start going for all safe food and cont
 DISABLE_ATTACKING = False  # Set to True to disable attack logic
 
 SAFE_SPACE_FACTOR = 1.5
+
+LOG_LEVEL = logging.DEBUG

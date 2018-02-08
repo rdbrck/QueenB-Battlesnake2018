@@ -3,16 +3,18 @@ from .strategy import need_food, check_attack, general_direction
 from .utils import timing, get_direction, add, neighbours
 from .algorithms import bfs, find_safest_position, find_food, flood_fill
 from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS,\
-                       SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR
+                       SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR, LOG_LEVEL
 
 from functools import reduce
 from threading import Thread
 import bottle
 import logging
+import traceback
 
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
+logger.setLevel(LOG_LEVEL)
 
 
 @bottle.route('/static/<path:path>')
@@ -42,9 +44,10 @@ def move():
     data = {}
     move = None
     time_remaining = [150]  # leave 50ms for network
-    next_move = list()
-    potential_snake_positions = list()
-    bad_positions = list()
+    next_move = []
+    thread_pool = []
+    potential_snake_positions = []
+    bad_positions = []
 
     with timing("bottle", time_remaining):
         data = bottle.request.json
@@ -67,10 +70,10 @@ def move():
 
         # Flood fill in each direction to find bad directions
         with timing("intial flood fill", time_remaining):
-            number_of_squares = list()
-
+            number_of_squares = []
             # Get size of space we can safely move into (should be larger than body size)
             safe_space_size = snake.attributes.get('length', 10) * SAFE_SPACE_FACTOR
+
             for cell in neighbours(snake.head):
                 if board.inside(cell):
                     count = len(flood_fill(board, cell, False))
@@ -101,7 +104,7 @@ def move():
             with timing("find_food", time_remaining):
                 food_positions = find_food(snake.head, snake.attributes['health'], board, food)
                 positions = [position[0] for position in food_positions]
-                thread_pool = list()
+                thread_pool = []
 
                 for position in positions:
                     t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
@@ -122,7 +125,7 @@ def move():
             with timing("find_safest_position", time_remaining):
                 positions = find_safest_position(snake.head, general_direction(board, snake.head, snake.attributes['health']), board)
                 positions = [position[0] for position in positions]
-                thread_pool = list()
+                thread_pool = []
 
                 for position in positions:
                     t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
@@ -137,7 +140,7 @@ def move():
                     move = get_direction(snake.head, path[0])
 
     except Exception as e:
-        logger.error("Code failure - %s" % str(e))
+        logger.error("Code failure - %s \n %s" % (str(e), str(traceback.format_exc())))
 
     # If code above failed then fallback to a floodfill move
     if not move:
