@@ -22,7 +22,7 @@ def start():
         'color': SNAKE_COLOR,
         'secondary_color': SNAKE_SECONDARY_COLOR,
         'taunt': SNAKE_TAUNT,
-        'head_url': '',
+        'head_url': 'https://www.popsci.com/sites/popsci.com/files/styles/1000_1x_/public/images/2015/03/snake.jpg?itok=oi82kZXn',
         'name': SNAKE_NAME,
         'head_type': SNAKE_HEAD,
         'tail_type': SNAKE_TAIL
