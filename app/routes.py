@@ -43,7 +43,6 @@ def move():
     move = None
     time_remaining = [150]  # leave 50ms for network
     next_move = list()
-    thread_pool = list()
     potential_snake_positions = list()
     bad_positions = list()
 
@@ -69,6 +68,7 @@ def move():
         # Flood fill in each direction to find bad directions
         with timing("intial flood fill", time_remaining):
             number_of_squares = list()
+            largest_backup = None
             # Get size of space we can safely move into (should be larger than body size)
             safe_space_size = snake.attributes.get('length', 10) * SAFE_SPACE_FACTOR
             for cell in neighbours(snake.head):
@@ -79,7 +79,7 @@ def move():
                         bad_positions.append(cell)
 
             # If all are bad don't set the largest as bad
-            if number_of_squares[0][1] <= safe_space_size and number_of_squares[1][1] <= safe_space_size and number_of_squares[2][1] <= safe_space_size and number_of_squares[3][1] <= safe_space_size:
+            if set([cell[0] for cell in number_of_squares]).issubset(set(bad_positions)):
                 largest = reduce(lambda carry, direction: carry if carry[1] > direction[1] else direction, number_of_squares, number_of_squares[0])
                 bad_positions.remove(largest[0])
 
@@ -101,6 +101,7 @@ def move():
             with timing("find_food", time_remaining):
                 food_positions = find_food(snake.head, snake.attributes['health'], board, food)
                 positions = [position[0] for position in food_positions]
+                thread_pool = list()
 
                 for position in positions:
                     t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
@@ -112,14 +113,16 @@ def move():
 
                 next_move = [path for path in next_move if not len(path) == 0]
 
-                path = min(next_move, key=len)
-                move = get_direction(snake.head, path[0])
+                if len(next_move) > 0:  # No good path so we need to do a fallback move
+                    path = min(next_move, key=len)
+                    move = get_direction(snake.head, path[0])
 
         # If we don't need food and don't have the opportunity to attack then find a path to a "good" position on the board
-        else:
+        if not move:
             with timing("find_safest_position", time_remaining):
                 positions = find_safest_position(snake.head, general_direction(board, snake.head, snake.attributes['health']), board)
                 positions = [position[0] for position in positions]
+                thread_pool = list()
 
                 for position in positions:
                     t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
@@ -129,8 +132,9 @@ def move():
                     thread.start()
                     thread.join()
 
-                path = max(next_move, key=len)
-                move = get_direction(snake.head, path[0])
+                if len(next_move) > 0:  # No good path so we need to do a fallback move
+                    path = max(next_move, key=len)
+                    move = get_direction(snake.head, path[0])
 
     except Exception as e:
         logger.error("Code failure - %s" % str(e))
