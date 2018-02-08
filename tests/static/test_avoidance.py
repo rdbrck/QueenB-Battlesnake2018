@@ -41,7 +41,7 @@ class TestAvoidanceLogic(unittest.TestCase):
         self.assertEqual(response.json()['move'], 'right')
 
     def test_avoid_tail_growth(self):
-        """ know that you needd to path around enemy tail growth """
+        """ know that you need to path around enemy tail growth """
         data = TestGameData()
         data.set_self([(5, 6), (5, 7), (5, 8)], health=10)
         data.add_enemy([(7, 5), (6, 5), (5, 5)])
