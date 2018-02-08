@@ -89,7 +89,7 @@ def find_safest_position(current_position, direction, board):
 
             # diagonal
             if abs(direction_vector[0]) == abs(direction_vector[1]):
-                direction_vector = list(direction_vector)  # tuples are immutable
+                direction_vector = [direction_vector]  # tuples are immutable
                 direction_vector[int(time.time()) % 2] = 0  # 300% faster than random.randint()
                 direction_vector = tuple(direction_vector)  # back to tuple because DIR_VECTOR contains tuples
 

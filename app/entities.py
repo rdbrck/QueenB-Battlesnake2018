@@ -13,7 +13,7 @@ class Snake(object):
         else:
             # Create a snake from a battlesnake snake dict
             self.attributes = {k: kwargs[k] for k in Snake.ATTRIBUTES}
-            self.coords = list((p['x'], p['y']) for p in kwargs['body']['data'])
+            self.coords = [(p['x'], p['y']) for p in kwargs['body']['data']]
 
     def __len__(self):
         return self.length
@@ -70,7 +70,7 @@ class Board(object):
 
             # Only take snakes that are alive
             self.snakes = [Snake(**s) for s in kwargs['snakes']['data']]
-            self.food = list((p['x'], p['y']) for p in kwargs['food']['data'])
+            self.food = [(p['x'], p['y']) for p in kwargs['food']['data']]
 
             # Fill out initially occupied cells on board
             for snake in self.snakes:

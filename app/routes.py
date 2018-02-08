@@ -2,16 +2,18 @@ from .entities import Board
 from .strategy import need_food, general_direction
 from .utils import timing, get_direction, add, neighbours
 from .algorithms import bfs, find_safest_position, find_food, flood_fill
-from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS, SNAKE_SECONDARY_COLOR
+from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS, SNAKE_SECONDARY_COLOR, LOG_LEVEL
 
 from functools import reduce
 from threading import Thread
 import bottle
 import logging
+import sys
 
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
+logger.setLevel(LOG_LEVEL)
 
 
 @bottle.route('/static/<path:path>')
@@ -41,10 +43,10 @@ def move():
     data = {}
     move = None
     time_remaining = [150]  # leave 50ms for network
-    next_move = list()
-    thread_pool = list()
-    potential_snake_positions = list()
-    bad_positions = list()
+    next_move = []
+    thread_pool = []
+    potential_snake_positions = []
+    bad_positions = []
 
     with timing("bottle", time_remaining):
         data = bottle.request.json
@@ -67,7 +69,7 @@ def move():
 
         # Flood fill in each direction to find bad directions - could be modified to correlate to length of our snake (see <= 10)
         with timing("intial flood fill", time_remaining):
-            number_of_squares = list()
+            number_of_squares = []
             for cell in neighbours(snake.head):
                 if board.inside(cell):
                     count = len(flood_fill(board, cell, False))
