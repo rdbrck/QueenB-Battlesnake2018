@@ -98,7 +98,7 @@ class TestAvoidanceLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'left')
 
-    # fails: chooses suicide rather than move into _potentially_ dangerous square
+    # fails: sometimes chooses suicide rather than move into _potentially_ dangerous square
     def test_corner_must_turn_into_tail(self):
         """ only option is to turn where tail _could_ be if enemy grows """
         data = TestGameData()
