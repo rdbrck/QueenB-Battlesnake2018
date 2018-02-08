@@ -79,7 +79,6 @@ class TestFoodLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'left')
 
-    @unittest.skip("This needs to be fixed. It should not commit suicide for food.")
     def test_contested_touching_equal(self):
         """ contested food - touching - same size - this would be suicide and we can't rely on other snakes accounting for that """
         data = TestGameData()
@@ -100,7 +99,6 @@ class TestFoodLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'left')
 
-    @unittest.skip("This needs to be fixed. It should go for the alternate food.")
     def test_contested_close_equal_low_alternate(self):
         """ contested food - close - same size - low food - other food available"""
         data = TestGameData()
@@ -121,7 +119,6 @@ class TestFoodLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'left')
 
-    @unittest.skip("This needs to be fixed. We shouldn't commit suicide.")
     def test_contested_touching_smaller(self):
         """ contested food - touching - smaller - getting food in this case is suicide """
         data = TestGameData()

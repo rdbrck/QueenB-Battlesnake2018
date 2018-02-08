@@ -51,9 +51,15 @@ SNAKE = 1
 FOOD = 2
 SPOILED = 3
 
-FOOD_CLOSE_HEALTH = 85  # When we should stop ignoring food
-FOOD_HUNGRY_HEALTH = 50  # When we should start going for contested food
-FOOD_CLOSE_DIST = 2  # How many moves away is a close piece of food
+FOOD_HEALTH_IGNORE = 90  # Ignore pathing directly to food above this health
+FOOD_CLOSE_HEALTH = 85  # Between this and ignore health just go for close food
+FOOD_CLOSE_DIST = 5  # The distance food is away to be considered close
+FOOD_MEDIUM_HEALTH = 80  # Between this and close distance is medium distance 
+FOOD_MEDIUM_DIST = 10  # How many moves away is a medium distance food
+FOOD_HUNGRY_HEALTH = 70  # When we should start going for all safe food and contested food if there isn't safe food
 
+DISABLE_ATTACKING = False  # Set to True to disable attack logic
+
+SAFE_SPACE_FACTOR = 1.5
 
 LOG_LEVEL = logging.DEBUG

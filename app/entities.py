@@ -31,6 +31,10 @@ class Snake(object):
         return self.coords[-1]
     tail = property(_get_tail)
 
+    def _get_body(self):
+        return self.coords[1:]
+    body = property(_get_body)
+
     def potential_positions(self):
         return [add(self.head, d) for d in DIR_VECTORS if d != sub((0, 0), self.direction)]
 
