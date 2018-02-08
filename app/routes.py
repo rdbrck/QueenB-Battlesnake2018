@@ -68,7 +68,7 @@ def move():
         # Flood fill in each direction to find bad directions
         with timing("intial flood fill", time_remaining):
             number_of_squares = list()
-            largest_backup = None
+
             # Get size of space we can safely move into (should be larger than body size)
             safe_space_size = snake.attributes.get('length', 10) * SAFE_SPACE_FACTOR
             for cell in neighbours(snake.head):
