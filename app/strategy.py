@@ -1,4 +1,4 @@
-from .utils import dist, neighbours, translate_to_direction
+from .utils import dist, neighbours, sub
 from .constants import FOOD_CLOSE_HEALTH, FOOD_HUNGRY_HEALTH
 
 
@@ -91,25 +91,17 @@ def need_food(board, bad_positions, snake):
     return (food_to_get if len(food_to_get) > 0 else None)
 
 
-def _touching_snake(enemy, snake):
-    """ tests if the enemy snake is touching our tail """
+def _touching_body(enemy, snake):
+    """ tests if the enemy snake is touching our body """
     for pos in neighbours(enemy.head):
-        if pos in snake.tail:
+        if pos in snake.body:
             return True
     return False
 
 
 def _same_direction(enemy, snake):
     """ returns true when a two snakes last move were the same (pointing in same direction) """
-    return translate_to_direction(enemy.coords[0], enemy.coords[1]) == translate_to_direction(snake.coords[0], snake.coords[1])
-
-
-def _sandwiched(board, enemy):
-    """ return true if snake is sandwiched in either x or y plane """
-    sandwiched_column = (not board.vacant(enemy.head[0]-1, enemy.head[1]) and not board.vacant(enemy.head[0]+1, enemy.head[1]))
-    sandwiched_row = (not board.vacant(enemy.head[0], enemy.head[1]-1) and not board.vacant(enemy.head[0], enemy.head[1]+1))
-
-    return sandwiched_row != sandwiched_column:
+    return sub(enemy.coords[0], enemy.coords[1]) == sub(snake.coords[0], snake.coords[1])
 
 
 def check_attack(board, potential_snake_positions, bad_positions, snake):
@@ -119,24 +111,49 @@ def check_attack(board, potential_snake_positions, bad_positions, snake):
 
     # add potential attack positions where a snake with less health might move into
     for pos in neighbours(snake.head):
-        if pos in potential_snake_positions and pos not in bad_positions:
+        if pos in potential_snake_positions:
             possible_attacks.append(pos)
 
     # add potential attack positions where enemy snake is between us and a wall or another snake
     for enemy in enemy_snakes:
-        # filters that must pass for us to perform this attack
-        if not _touching_snake(enemy, snake) or not _sandwiched(board, enemy) or not _same_direction(enemy, snake):
+        # although generic, we can ignore snakes that don't pass these
+        if not _touching_body(enemy, snake) or not _same_direction(enemy, snake):
             continue
 
-        
+        direction = sub(enemy.coords[0], enemy.coords[1])
+        if direction[0] != 0 and enemy.head[1] in [snake.head[1] - 1, snake.head[1] + 1]:  # moving in the x plane and our head is one row off
+            for x in range(1, abs(enemy.head[0] - snake.head[0])): # loop through whole body but not head
+                position = (enemy.head[0] + direction[0] * x, enemy.head[1])  # find next path in tunnel
 
+                # if enemy snake is not in a tunnel for the paths leading up to our head then ignore snake
+                if board.vacant((position[0], position[1] + 1)) or board.vacant((position[0], position[1] - 1)):
+                    break
 
+                # if it's a tunnel the whole way it's possible that we can kill it if it's a safe move
+                if x == abs(enemy.head[0] - snake.head[0]) - 1:
+                    possible_attacks.append((snake.head[0], enemy.head[1]))
+
+        elif enemy.head[0] in [snake.head[0] - 1, snake.head[0] + 1]:  # moving in the y plane and our head is one column off
+            for x in range(1, abs(enemy.head[1] - snake.head[1])): # loop through whole body but not head
+                position = (enemy.head[0], enemy.head[1] + direction[1] * x)  # find next path in tunnel
+
+                # if enemy snake is not in a tunnel for the paths leading up to our head then ignore snake
+                if board.vacant((position[0] + 1, position[1])) or board.vacant((position[0] - 1, position[1])):
+                    break
+
+                # if it's a tunnel the whole way it's possible that we can kill it if it's a safe move
+                if x == abs(enemy.head[1] - snake.head[1]) - 1:
+                    possible_attacks.append((enemy.head[0], snake.head[1]))
 
     # remove possible attack spots where the enemy snake is equal in size or bigger
     for enemy in enemy_snakes:
-        enemy_neighbours = neighbours(enemy.head)
-        for neighbour in enemy_neighbours:
+        for neighbour in neighbours(enemy.head):
             if neighbour in possible_attacks and enemy.attributes['length'] >= snake.attributes['length']:
                 possible_attacks.remove(neighbour)
+
+    # remove possible attack moves if they have been deamed 'bad' as aprt of previous logic
+    for pos in bad_positions:
+        if pos in possible_attacks:
+            possible_attacks.remove(pos)
 
     return (possible_attacks[0] if len(possible_attacks) > 0 else None)

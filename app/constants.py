@@ -52,3 +52,5 @@ SPOILED = 3
 
 FOOD_CLOSE_HEALTH = 85
 FOOD_HUNGRY_HEALTH = 50
+
+DISABLE_ATTACKING = False  # Set to True to disable attack logic
