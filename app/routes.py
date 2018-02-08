@@ -2,7 +2,8 @@ from .entities import Board
 from .strategy import need_food, check_attack, general_direction
 from .utils import timing, get_direction, add, neighbours
 from .algorithms import bfs, find_safest_position, find_food, flood_fill
-from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS, SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING
+from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS,\
+                       SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH
 
 from functools import reduce
 from threading import Thread
@@ -89,8 +90,12 @@ def move():
         with timing("need_food", time_remaining):
             food = need_food(board, bad_positions, snake)
 
-        # If we need food find a good path to said food (prioritize over attacking)
-        if food:
+        # If we have the opportunity to attack and are not starving then attack
+        if attack and not DISABLE_ATTACKING and (snake.attributes['health'] > FOOD_HUNGRY_HEALTH or not food):
+            move = get_direction(snake.head, attack)
+
+        # If we need food find a good path to said food (prioritize over attacking when hungry)
+        elif food:
             with timing("find_food", time_remaining):
                 food_positions = find_food(snake.head, snake.attributes['health'], board, food)
                 positions = [position[0] for position in food_positions]
@@ -108,11 +113,7 @@ def move():
                 path = min(next_move, key=len)
                 move = get_direction(snake.head, path[0])
 
-        # If we have the opportunity to attack and are not starving then attack
-        elif attack and not DISABLE_ATTACKING:
-            move = get_direction(snake.head, attack)
-
-        # If we don't need food or have the opportunity to attack then find a path to a "good" position on the board
+        # If we don't need food and don't have the opportunity to attack then find a path to a "good" position on the board
         else:
             with timing("find_safest_position", time_remaining):
                 positions = find_safest_position(snake.head, general_direction(board, snake.head, snake.attributes['health']), board)
