@@ -58,3 +58,5 @@ FOOD_MEDIUM_DIST = 10  # How many moves away is a medium distance food
 FOOD_HUNGRY_HEALTH = 70  # When we should start going for all safe food and contested food if there isn't safe food
 
 DISABLE_ATTACKING = False  # Set to True to disable attack logic
+
+SAFE_SPACE_FACTOR = 1.5

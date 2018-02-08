@@ -3,7 +3,7 @@ from .strategy import need_food, check_attack, general_direction
 from .utils import timing, get_direction, add, neighbours
 from .algorithms import bfs, find_safest_position, find_food, flood_fill
 from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS,\
-                       SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH
+                       SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR
 
 from functools import reduce
 from threading import Thread
@@ -66,18 +66,20 @@ def move():
                 if enemy_snake.attributes['id'] != snake.attributes['id']:
                     potential_snake_positions.extend([position for position in enemy_snake.potential_positions() if board.inside(position)])
 
-        # Flood fill in each direction to find bad directions - could be modified to correlate to length of our snake (see <= 10)
+        # Flood fill in each direction to find bad directions
         with timing("intial flood fill", time_remaining):
             number_of_squares = list()
+            # Get size of space we can safely move into (should be larger than body size)
+            safe_space_size = snake.attributes.get('length', 10) * SAFE_SPACE_FACTOR
             for cell in neighbours(snake.head):
                 if board.inside(cell):
                     count = len(flood_fill(board, cell, False))
                     number_of_squares.append((cell, count))
-                    if count <= 10:
+                    if count <= safe_space_size:
                         bad_positions.append(cell)
 
             # If all are bad don't set the largest as bad
-            if number_of_squares[0][1] <= 10 and number_of_squares[1][1] <= 10 and number_of_squares[2][1] <= 10 and number_of_squares[3][1] <= 10:
+            if number_of_squares[0][1] <= safe_space_size and number_of_squares[1][1] <= safe_space_size and number_of_squares[2][1] <= safe_space_size and number_of_squares[3][1] <= safe_space_size:
                 largest = reduce(lambda carry, direction: carry if carry[1] > direction[1] else direction, number_of_squares, number_of_squares[0])
                 bad_positions.remove(largest[0])
 
