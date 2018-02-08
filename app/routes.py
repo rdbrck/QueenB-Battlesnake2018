@@ -8,7 +8,6 @@ from functools import reduce
 from threading import Thread
 import bottle
 import logging
-import sys
 import traceback
 
 
@@ -96,10 +95,6 @@ def move():
 
                 for position in positions:
                     t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
-                    # As far as I can see if we're running the same search twice, but once when we eliminate certain cells,
-                    # the instance that does not have any restrictions will always result in the shorter path. So no point running it twice.
-                    # If we want the existing login then swap which one we run.
-                    # t = Thread(target=bfs(snake.head, position, board, [], next_move))
 
                     thread_pool.append(t)
 
@@ -120,7 +115,6 @@ def move():
 
                 for position in positions:
                     t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
-                    t = Thread(target=bfs(snake.head, position, board, [], next_move))
 
                     thread_pool.append(t)
 
