@@ -6,7 +6,7 @@ from copy import deepcopy
 from collections import deque
 
 from .utils import neighbours, surrounding, sub
-from .constants import DIR_NAMES, DIR_VECTORS, SNAKE
+from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, SNAKE, FOOD, SPOILED
 
 
 def _rate_cell(cell, board, recurse=False):
@@ -89,7 +89,7 @@ def find_safest_position(current_position, direction, board):
 
             # diagonal
             if abs(direction_vector[0]) == abs(direction_vector[1]):
-                direction_vector = [direction_vector]  # tuples are immutable
+                direction_vector = list(direction_vector)  # tuples are immutable
                 direction_vector[int(time.time()) % 2] = 0  # 300% faster than random.randint()
                 direction_vector = tuple(direction_vector)  # back to tuple because DIR_VECTOR contains tuples
 
@@ -149,7 +149,7 @@ def bfs(starting_position, target_position, board, exclude, return_list):
     x = starting_position[0]
     y = starting_position[1]
     board_copy = deepcopy(board)
-    board_copy.set_cell((x, y), 0)
+    board_copy.set_cell((x, y), EMPTY)
 
     for excluded_point in exclude:
         board_copy.set_cell(excluded_point, "B")
@@ -165,7 +165,7 @@ def bfs(starting_position, target_position, board, exclude, return_list):
             if (x, y) == target_position:  # If we reach target_position
                 return _get_path_from_nodes(node)  # Rebuild path
 
-            if (board_copy.outside((x, y)) or board_copy.get_cell((x, y)) == "B" or board_copy.get_cell((x, y)) == 1) and not (x, y) == starting_position:  # Snakes
+            if (board_copy.outside((x, y)) or board_copy.get_cell((x, y)) == "B" or board_copy.get_cell((x, y)) == SNAKE) and not (x, y) == starting_position:  # Snakes
                 continue
 
             board_copy.set_cell((x, y), "B")  # Mark as explored

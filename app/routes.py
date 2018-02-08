@@ -9,6 +9,7 @@ from threading import Thread
 import bottle
 import logging
 import sys
+import traceback
 
 
 logging.basicConfig()
@@ -87,7 +88,7 @@ def move():
         with timing("need_food", time_remaining):
             food = need_food(board, bad_positions, snake)
 
-        # If we need food find a good path to said food (prioritize over attacking)
+        # If we need food, find a good path to said food (prioritize over attacking)
         if food:
             with timing("find_food", time_remaining):
                 food_positions = find_food(snake.head, snake.attributes['health'], board, food)
@@ -95,7 +96,10 @@ def move():
 
                 for position in positions:
                     t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
-                    t = Thread(target=bfs(snake.head, position, board, [], next_move))
+                    # As far as I can see if we're running the same search twice, but once when we eliminate certain cells,
+                    # the instance that does not have any restrictions will always result in the shorter path. So no point running it twice.
+                    # If we want the existing login then swap which one we run.
+                    # t = Thread(target=bfs(snake.head, position, board, [], next_move))
 
                     thread_pool.append(t)
 
@@ -128,7 +132,7 @@ def move():
                 move = get_direction(snake.head, path[0])
 
     except Exception as e:
-        logger.error("Code failure - %s" % str(e))
+        logger.error("Code failure - %s \n %s" % (str(e), str(traceback.format_exc())))
 
     # If code above failed then fallback to a floodfill move
     if not move:
