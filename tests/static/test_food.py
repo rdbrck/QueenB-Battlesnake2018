@@ -39,11 +39,10 @@ class TestFoodLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'right')
 
-    @unittest.skip("Skipping as snake doesn't eat if it's not hungry. Could be implemented as an improvement.")
     def test_get_food_if_close_not_hungry(self):
         """ food is right beside us so might as well grab it """
         data = TestGameData()
-        data.set_self([(5, 5), (5, 6), (5, 7)])
+        data.set_self([(5, 5), (5, 6), (5, 7)], health=80)
         data.set_food([(4, 5)])
 
         response = requests.post(TEST_INSTANCE,  json=data.data)

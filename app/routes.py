@@ -142,16 +142,30 @@ def move():
     except Exception as e:
         logger.error("Code failure - %s \n %s" % (str(e), str(traceback.format_exc())))
 
-    # If code above failed then fallback to a floodfill move
+    # If code above failed then fallback to a floodfill style move
     if not move:
         logger.info("CHANGED MOVE - floodfill fallback.")
         with timing("floodfill fallback", time_remaining):
+            temp_board = Board(clone=board)
+            for pos in bad_positions:
+                temp_board.set_cell(pos, 1)
+
+            # try flood fill with bad positionns included
             floods = {
-                "up": len(flood_fill(board, (snake.head[0], snake.head[1]-1))),
-                "down": len(flood_fill(board, (snake.head[0], snake.head[1]+1))),
-                "right": len(flood_fill(board, (snake.head[0]+1, snake.head[1]))),
-                "left": len(flood_fill(board, (snake.head[0]-1, snake.head[1])))
+                "up": len(flood_fill(temp_board, (snake.head[0], snake.head[1]-1))),
+                "down": len(flood_fill(temp_board, (snake.head[0], snake.head[1]+1))),
+                "right": len(flood_fill(temp_board, (snake.head[0]+1, snake.head[1]))),
+                "left": len(flood_fill(temp_board, (snake.head[0]-1, snake.head[1])))
             }
+
+            # fallback if all of those are bad to see if we can chance a good move
+            if all(direction < safe_space_size for direction in floods.values()):
+                floods = {
+                    "up": len(flood_fill(board, (snake.head[0], snake.head[1]-1))),
+                    "down": len(flood_fill(board, (snake.head[0], snake.head[1]+1))),
+                    "right": len(flood_fill(board, (snake.head[0]+1, snake.head[1]))),
+                    "left": len(flood_fill(board, (snake.head[0]-1, snake.head[1])))
+                }
 
             move = max(iter(floods.keys()), key=(lambda key: floods[key]))
 

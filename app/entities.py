@@ -16,7 +16,7 @@ class Snake(object):
             self.coords = [(p['x'], p['y']) for p in kwargs['body']['data']]
 
     def __len__(self):
-        return self.length
+        return self.attributes['length']
 
     def _get_direction(self):
         assert len(self.coords) > 1
@@ -54,9 +54,11 @@ class Board(object):
             self.width = clone.width
             self.height = clone.height
             self.cells = []
+            self.meta_cells = []
 
             for x in range(self.width):
                 self.cells.append(clone.cells[x].copy())
+                self.meta_cells.append(clone.meta_cells[x].copy())
 
             self.snakes = [Snake(s) for s in clone.snakes]
             self.food = clone.food.copy()
