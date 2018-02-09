@@ -62,4 +62,11 @@ DISABLE_ATTACKING = False  # Set to True to disable attack logic
 
 SAFE_SPACE_FACTOR = 1.5
 
+# Ratings for how important each thing is
+FOOD_RATING = 2
+SPOILED_RATING = 1
+EMPTY_RATING = 0.5
+BODY_RATING = -1
+ENEMY_RATING = -2
+
 LOG_LEVEL = logging.DEBUG

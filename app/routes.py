@@ -71,9 +71,9 @@ def move():
         # Flood fill in each direction to find bad directions
         with timing("intial flood fill", time_remaining):
             number_of_squares = []
+
             # Get size of space we can safely move into (should be larger than body size)
             safe_space_size = snake.attributes.get('length', 10) * SAFE_SPACE_FACTOR
-
             for cell in neighbours(snake.head):
                 if board.inside(cell):
                     count = len(flood_fill(board, cell, False))
@@ -123,7 +123,7 @@ def move():
         # If we don't need food and don't have the opportunity to attack then find a path to a "good" position on the board
         if not move:
             with timing("find_safest_position", time_remaining):
-                positions = find_safest_position(snake.head, general_direction(board, snake.head, snake.attributes['health']), board)
+                positions = find_safest_position(snake.head, general_direction(board, snake, bad_positions), board)
                 positions = [position[0] for position in positions]
                 thread_pool = []
 
