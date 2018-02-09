@@ -62,15 +62,16 @@ def general_direction(board, snake, bad_positions):
         if enemy.attributes['id'] != snake.attributes['id']:
             index = 'enemy'
 
-        directions = _add_count_directions(directions, index, pos, snake.head)
+        for pos in enemy.coords:
+            directions = _add_count_directions(directions, index, pos, snake.head)
 
     # set food as good
     for fud in board.food:
         index = 'food'
-        if board.get_cell(pos) == SPOILED:
+        if board.get_cell(fud) == SPOILED:
             index = 'spoiled'
 
-        directions = _add_count_directions(directions, index, pos, snake.head)
+        directions = _add_count_directions(directions, index, fud, snake.head)
 
     # find best general direction
     best_direction = None
