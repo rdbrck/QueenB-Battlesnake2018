@@ -142,38 +142,42 @@ def move():
     except Exception as e:
         logger.error("Code failure - %s \n %s" % (str(e), str(traceback.format_exc())))
 
-    # setup the board for fallback and verification
-    with timing("setup fallback and verification board", time_remaining):
-        for enemy in board.snakes:
-            if enemy.attributes['id'] != snake.attributes['id'] and (len(board.food) == 0 or enemy.closest_food(board.food)[1] < dist(snake.head, enemy.tail)):
-                board.set_cell(enemy.tail, 0)
+    try:
+        # setup the board for fallback and verification
+        with timing("setup fallback and verification board", time_remaining):
+            for enemy in board.snakes:
+                if enemy.attributes['id'] != snake.attributes['id'] and (len(board.food) == 0 or enemy.closest_food(board.food)[1] < dist(snake.head, enemy.tail)):
+                    board.set_cell(enemy.tail, 0)
 
-    # If code above failed then fallback to a floodfill style move
-    if not move:
-        logger.info("CHANGED MOVE - floodfill fallback.")
-        with timing("floodfill fallback", time_remaining):
-            temp_board = Board(clone=board)
-            for pos in potential_snake_positions:
-                temp_board.set_cell(pos, 1)
+        # If code above failed then fallback to a floodfill style move
+        if not move:
+            logger.info("CHANGED MOVE - floodfill fallback.")
+            with timing("floodfill fallback", time_remaining):
+                temp_board = Board(clone=board)
+                for pos in potential_snake_positions:
+                    temp_board.set_cell(pos, 1)
 
-            # try flood fill with bad positionns and no worry tails included
-            floods = {
-                "up": len(flood_fill(temp_board, (snake.head[0], snake.head[1]-1))),
-                "down": len(flood_fill(temp_board, (snake.head[0], snake.head[1]+1))),
-                "right": len(flood_fill(temp_board, (snake.head[0]+1, snake.head[1]))),
-                "left": len(flood_fill(temp_board, (snake.head[0]-1, snake.head[1])))
-            }
-
-            # less restrictive as it doesn't look at the potential next move
-            if all(direction < snake.attributes['length'] for direction in floods.values()):
+                # try flood fill with bad positionns and no worry tails included
                 floods = {
-                    "up": len(flood_fill(board, (snake.head[0], snake.head[1]-1))),
-                    "down": len(flood_fill(board, (snake.head[0], snake.head[1]+1))),
-                    "right": len(flood_fill(board, (snake.head[0]+1, snake.head[1]))),
-                    "left": len(flood_fill(board, (snake.head[0]-1, snake.head[1])))
+                    "up": len(flood_fill(temp_board, (snake.head[0], snake.head[1]-1))),
+                    "down": len(flood_fill(temp_board, (snake.head[0], snake.head[1]+1))),
+                    "right": len(flood_fill(temp_board, (snake.head[0]+1, snake.head[1]))),
+                    "left": len(flood_fill(temp_board, (snake.head[0]-1, snake.head[1])))
                 }
 
-            move = max(iter(floods.keys()), key=(lambda key: floods[key]))
+                # less restrictive as it doesn't look at the potential next move
+                if all(direction < snake.attributes['length'] for direction in floods.values()):
+                    floods = {
+                        "up": len(flood_fill(board, (snake.head[0], snake.head[1]-1))),
+                        "down": len(flood_fill(board, (snake.head[0], snake.head[1]+1))),
+                        "right": len(flood_fill(board, (snake.head[0]+1, snake.head[1]))),
+                        "left": len(flood_fill(board, (snake.head[0]-1, snake.head[1])))
+                    }
+
+                move = max(iter(floods.keys()), key=(lambda key: floods[key]))
+    except Exception as e:
+        logger.error("Fallback failure - %s \n %s" % (str(e), str(traceback.format_exc())))
+        move = "up"  # Something is really messed up if this happens
 
     # Verify we didn't pick a bad move (wall or snake) - shouldn't happen but there if needed
     with timing("verify move", time_remaining):
