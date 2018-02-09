@@ -81,6 +81,7 @@ class Board(object):
             self.height = kwargs['height']
             self.cells = []
             self.meta_cells = []
+            self.own_snake_id = kwargs['you']['id']
 
             for x in range(self.width):
                 self.cells.append([EMPTY] * self.height)

@@ -1,67 +1,93 @@
 from .utils import dist, neighbours, sub
-from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, FOOD_MEDIUM_DIST, FOOD_HUNGRY_HEALTH, FOOD_HEALTH_IGNORE, SPOILED
+from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, FOOD_MEDIUM_DIST, FOOD_HUNGRY_HEALTH, FOOD_HEALTH_IGNORE, SPOILED, SNAKE,\
+                       FOOD_RATING, ENEMY_RATING, BODY_RATING, EMPTY_RATING, SPOILED_RATING
 
 
-def general_direction(board, head, health):
-    """ Returns the most 'beneficial' direction to move in terms of board position """
-    # start with general area
-    direction = {
-        "up": 5000 / (dist(head, (head[0], 0))+1),
-        "down": 5000 / (dist(head, (head[0], board.height))+1),
-        "right": 5000 / (dist((board.width, head[1]), head)+1),
-        "left": 5000 / (dist((0, head[1]), head)+1)
+def _add_count_directions(directions, index, pos, head):
+    if pos[0] > head[0]:
+        directions['right'][index] += 1
+    elif pos[0] < head[0]:
+        directions['left'][index] += 1
+    if pos[1] < head[1]:
+        directions['up'][index] += 1
+    elif pos[1] > head[1]:
+        directions['down'][index] += 1
+
+    return directions
+
+
+def general_direction(board, snake, bad_positions):
+    """ Returns the most 'beneficial' general direction to move in terms of board position """
+    directions = {
+        "up": {
+            'food': 0,
+            'enemy': 0,
+            'body': 0,
+            'spoiled': 0,
+            'area': board.width * (snake.head[1] - 1)
+        },
+        "down": {
+            'food': 0,
+            'enemy': 0,
+            'body': 0,
+            'spoiled': 0,
+            'area': board.width * (board.height - (snake.head[1] + 1))
+        },
+        "left": {
+            'food': 0,
+            'enemy': 0,
+            'body': 0,
+            'spoiled': 0,
+            'area': board.height * (snake.head[0] - 1)
+        },
+        "right": {
+            'food': 0,
+            'enemy': 0,
+            'body': 0,
+            'spoiled': 0,
+            'area': board.height * (board.width - (snake.head[0] + 1))
+        }     
     }
 
-    # close to a border or snake?
-    if not board.vacant((head[0]-1, head[1])):
-        direction["left"] += 1000000
+    # set bad positions as bad
+    for pos in bad_positions:
+        if pos in snake.body:
+            continue
 
-    if not board.vacant((head[0]+1, head[1])):
-        direction["right"] += 1000000
+        directions = _add_count_directions(directions, 'enemy', pos, snake.head)
 
-    if not board.vacant((head[0], head[1]-1)):
-        direction["up"] += 1000000
+    # set snakes as bad and self as okay
+    for enemy in board.snakes:
+        index = 'body'
+        if enemy.attributes['id'] != snake.attributes['id']:
+            index = 'enemy'
 
-    if not board.vacant((head[0], head[1]+1)):
-        direction["down"] += 1000000
+        directions = _add_count_directions(directions, index, pos, snake.head)
 
-    # snakes in area
-    for snake in board.snakes:
-        for pos in snake.coords:
-            if pos == head:
-                continue
-            # right
-            if pos[0] > head[0]:
-                direction['right'] += 1000 / dist(pos, head)
-            # left
-            elif pos[0] < head[0]:
-                direction['left'] += 1000 / dist(pos, head)
-            # up
-            if pos[1] < head[1]:
-                direction['up'] += 1000 / dist(pos, head)
-            # down
-            elif pos[1] > head[1]:
-                direction['down'] += 1000 / dist(pos, head)
+    # set food as good
+    for fud in board.food:
+        index = 'food'
+        if board.get_cell(pos) == SPOILED:
+            index = 'spoiled'
 
-    # food in area
-    if health < 75:
-        for pos in board.food:
-            if board.get_cell(pos) == 3 and (health - dist(pos, head) > 20):
-                continue
-            # right
-            if pos[0] > head[0]:
-                direction['right'] -= (10000 / ((health / 10) + 1)) / dist(pos, head)
-            # left
-            elif pos[0] < head[0]:
-                direction['left'] -= (10000 / ((health / 10) + 1)) / dist(pos, head)
-            # up
-            if pos[1] < head[1]:
-                direction['up'] -= (10000 / ((health / 10) + 1)) / dist(pos, head)
-            # down
-            elif pos[1] > head[1]:
-                direction['down'] -= (10000 / ((health / 10) + 1)) / dist(pos, head)
+        directions = _add_count_directions(directions, index, pos, snake.head)
 
-    return min(iter(direction.keys()), key=(lambda key: direction[key]))
+    # find best general direction
+    best_direction = None
+    for direction, stats in directions.items():
+        if stats['area'] < 1:
+            continue
+
+        empty_cells = stats['area'] - stats['food'] - stats['spoiled'] - stats['body'] - stats['enemy']
+        average_cell_rating = (stats['food'] * FOOD_RATING + stats['spoiled'] * SPOILED_RATING + stats['body'] * BODY_RATING
+                                + stats['enemy'] * ENEMY_RATING + empty_cells * EMPTY_RATING) / stats['area']
+
+        if (best_direction and average_cell_rating > best_direction[1]) or not best_direction:
+            best_direction = (direction, average_cell_rating)
+        elif best_direction and average_cell_rating == best_direction[1] and directions[best_direction[0]]['area'] < stats['area']:
+            best_direction = (direction, average_cell_rating)
+
+    return best_direction[0]
 
 
 def need_food(board, bad_positions, snake):
@@ -91,7 +117,7 @@ def need_food(board, bad_positions, snake):
         # If it's contested but not going to get immediately taken and we are in possible distance of getting it then move one step closer
         for food in contested_food:
             if dist(food, snake.head) <= snake.attributes['health'] and food not in bad_positions:
-                food_to_get.append(food)                
+                food_to_get.append(food)
 
     return (food_to_get if len(food_to_get) > 0 else None)
 
@@ -127,7 +153,7 @@ def check_attack(board, potential_snake_positions, bad_positions, snake):
 
         direction = sub(enemy.coords[0], enemy.coords[1])
         if direction[0] != 0 and enemy.head[1] in [snake.head[1] - 1, snake.head[1] + 1]:  # moving in the x plane and our head is one row off
-            for x in range(1, abs(enemy.head[0] - snake.head[0])): # loop through whole body but not head
+            for x in range(1, abs(enemy.head[0] - snake.head[0])):  # loop through whole body but not head
                 position = (enemy.head[0] + direction[0] * x, enemy.head[1])  # find next path in tunnel
 
                 # if enemy snake is not in a tunnel for the paths leading up to our head then ignore snake
@@ -139,7 +165,7 @@ def check_attack(board, potential_snake_positions, bad_positions, snake):
                     possible_attacks.append((snake.head[0], enemy.head[1]))
 
         elif enemy.head[0] in [snake.head[0] - 1, snake.head[0] + 1]:  # moving in the y plane and our head is one column off
-            for x in range(1, abs(enemy.head[1] - snake.head[1])): # loop through whole body but not head
+            for x in range(1, abs(enemy.head[1] - snake.head[1])):  # loop through whole body but not head
                 position = (enemy.head[0], enemy.head[1] + direction[1] * x)  # find next path in tunnel
 
                 # if enemy snake is not in a tunnel for the paths leading up to our head then ignore snake
