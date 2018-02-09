@@ -12,33 +12,36 @@ def general_direction(board, snake, bad_positions):
             'enemy': 0,
             'body': 0,
             'spoiled': 0,
-            'area': board.width * snake.head[1] - 1
+            'area': board.width * (snake.head[1] - 1)
         },
         "down": {
             'food': 0,
             'enemy': 0,
             'body': 0,
             'spoiled': 0,
-            'area': board.width * board.height - (snake.head[1] + 1)
+            'area': board.width * (board.height - (snake.head[1] + 1))
         },
         "left": {
             'food': 0,
             'enemy': 0,
             'body': 0,
             'spoiled': 0,
-            'area': board.height * snake.head[0] - 1
+            'area': board.height * (snake.head[0] - 1)
         },
         "right": {
             'food': 0,
             'enemy': 0,
             'body': 0,
             'spoiled': 0,
-            'area': board.height * board.width - (snake.head[0] + 1)
+            'area': board.height * (board.width - (snake.head[0] + 1))
         }     
     }
 
     # set bad positions as bad
     for pos in bad_positions:
+        if pos in snake.body:
+            continue
+
         if pos[0] > snake.head[0]:
             directions['right']['enemy'] += 1
         elif pos[0] < snake.head[0]:
@@ -82,6 +85,9 @@ def general_direction(board, snake, bad_positions):
     # find best general direction
     best_direction = None
     for direction, stats in directions.items():
+        if stats['area'] < 1:
+            continue
+
         empty_cells = stats['area'] - stats['food'] - stats['spoiled'] - stats['body'] - stats['enemy']
         average_cell_rating = (stats['food'] * FOOD_RATING + stats['spoiled'] * SPOILED_RATING + stats['body'] * BODY_RATING
                                 + stats['enemy'] * ENEMY_RATING + empty_cells * EMPTY_RATING) / stats['area']

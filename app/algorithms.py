@@ -110,13 +110,13 @@ def find_safest_position(current_position, direction, board):
 
     # set up initial bounds
     if direction == "up":
-        bounds = [(0, 0), (board.width, current_position[1])]
+        bounds = [(0, 0), ((board.width-1), current_position[1])]
     elif direction == "down":
-        bounds = [(0, current_position[1]), (board.width, board.height)]
+        bounds = [(0, current_position[1]), ((board.width-1), (board.height-1))]
     elif direction == "right":
-        bounds = [(current_position[0], 0), (board.width, board.height)]
+        bounds = [(current_position[0], 0), ((board.width-1), (board.height-1))]
     else:  # left
-        bounds = [(0, 0), (current_position[0], board.height)]
+        bounds = [(0, 0), (current_position[0], (board.height-1))]
 
     return _find_safest(bounds, bounds[0])
 
