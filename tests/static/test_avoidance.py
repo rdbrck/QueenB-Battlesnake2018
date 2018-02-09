@@ -219,8 +219,8 @@ class TestAvoidanceLogic(unittest.TestCase):
     def test_if_two_dead_ends_choose_one_with_tail_no_food(self):
         """ only options are dead ends, don't go for bait, choose one with tail """
         data = TestGameData()
-        data.set_self([(5, 4), (5, 3), (5, 2), (5, 1), (5, 0), 
-                       (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), 
+        data.set_self([(4, 4), (4, 3), (4, 2), (4, 1), (4, 0), 
+                       (3, 0), (2, 0), (1, 0), (0, 0), 
                        (0, 1), (0, 2), (0, 3), (0, 4), (0, 5), 
                        (1, 5), (2, 5), (3, 5), (4, 5), (5, 5), 
                        (6, 5), (7, 5), (8, 5), (8, 4), (8, 3), 
@@ -233,13 +233,13 @@ class TestAvoidanceLogic(unittest.TestCase):
     def test_if_two_dead_ends_choose_one_with_tail_food(self):
         """ only options are dead ends, don't go for bait, choose one with tail """
         data = TestGameData()
-        data.set_self([(5, 4), (5, 3), (5, 2), (5, 1), (5, 0), 
-                       (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), 
+        data.set_self([(4, 4), (4, 3), (4, 2), (4, 1), (4, 0), 
+                       (3, 0), (2, 0), (1, 0), (0, 0), 
                        (0, 1), (0, 2), (0, 3), (0, 4), (0, 5), 
                        (1, 5), (2, 5), (3, 5), (4, 5), (5, 5), 
                        (6, 5), (7, 5), (8, 5), (8, 4), (8, 3), 
                        (8, 2), (8, 1), (8, 0), (7, 0), (6, 0)
-                       ], health=30)
+                       ], health=20)
         data.set_food([(1, 1)])
 
         response = requests.post(TEST_INSTANCE,  json=data.data)
