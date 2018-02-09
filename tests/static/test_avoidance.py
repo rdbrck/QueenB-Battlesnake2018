@@ -154,17 +154,6 @@ class TestAvoidanceLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'right')
 
-    def test_dont_trap_self_food_not_present(self):
-        """ do not enter boxed off region that is smaller than body """
-        data = TestGameData()
-        data.set_self([(0, 3), (1, 3), (2, 3), (3, 3), (4, 3), 
-                       (4, 2), (4, 1), (4, 0), (5, 0), (5, 1), 
-                       (5, 2), (5, 3), (5, 4), (5, 5), (5, 6), 
-                       (5, 7)], health=49)
-
-        response = requests.post(TEST_INSTANCE,  json=data.data)
-        self.assertEqual(response.json()['move'], 'down')
-
     def test_if_trapped_choose_smaller_trap_small_body(self):
         """ if given two dead ends, choose the larger one """
         data = TestGameData()
