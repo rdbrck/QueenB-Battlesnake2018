@@ -22,22 +22,20 @@ def _rate_cell(cell, board, bloom_level=10):
                 division_factor = 1
             cells.append(((cell[0]+x, cell[1]+y), division_factor))
 
-    # m_cells = [
-    #     (m_cell, board.get_cell((m_cell[0], m_cell[1]))) for m_cell in cells]
-
     # EMPTY = 0
     # SNAKE = 1
     # FOOD = 2
     # SPOILED = 3
     cell_weightings = [EMPTY_RATING, ENEMY_RATING, FOOD_RATING, SPOILED_RATING, BODY_RATING, OUT_SIDE_BOARD_RATING]
-    own_snake = board.get_snake(board.own_snake_id)
     cell_values = []
+    own_snake = board.get_snake(board.own_snake_id)
+
     for m_cell in cells:
         weight_key = 5  # Outside the board
         if board.inside(m_cell[0]):
             weight_key = board.get_cell(m_cell[0])
-        if m_cell[0] in own_snake.body:
-            weight_key = 4
+            if m_cell[0] in own_snake.body:
+                weight_key = 4
         cell_values.append((weight_key, m_cell[1]))
 
     return reduce(lambda carry, m_cell: carry + cell_weightings[m_cell[0]]/m_cell[1], cell_values, 0)
