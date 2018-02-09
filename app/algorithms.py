@@ -8,17 +8,23 @@ from collections import deque
 from .utils import neighbours, surrounding, sub
 from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, SNAKE, FOOD, SPOILED
 
-
-def _rate_cell(cell, board, recurse=False):
+def _rate_cell(cell, board, bloom_level=10):
     """ rates a cell based on proximity to other snakes, food, the edge of the board, etc """
-    cells = [m_cell for m_cell in surrounding(cell) if board.inside(m_cell)]
-    cells = [(m_cell, board.get_cell(m_cell)) for m_cell in cells]
-    cell_value = reduce(lambda carry, m_cell: carry + [0.5, -5, 2, 0][m_cell[1]], cells, 0)
 
-    if recurse or cell_value < 2:
-        return cell_value
-    else:
-        return cell_value + sum([_rate_cell(m_cell, board) / 10 for m_cell in surrounding(cell) if board.inside(m_cell)])
+    cells = []
+    # Get all the cells of "bloom_level" number of circles surrounding the given cell.
+    for x in range(-bloom_level, bloom_level+1):
+        for y in range(-bloom_level, bloom_level+1):
+            division_factor = max(abs(x),abs(y))
+            if division_factor == 0:
+                division_factor = 1
+            if board.inside((cell[0]+x, cell[1]+y)):
+                cells.append((cell[0]+x, cell[1]+y, division_factor))
+
+    m_cells = [(m_cell, board.get_cell((m_cell[0], m_cell[1]))) for m_cell in cells]
+    cell_value = reduce(lambda carry, m_cell: carry + [1, -5, 2, -0.5][m_cell[1]]/m_cell[0][2], m_cells, 0)
+
+    return cell_value
 
 
 def flood_fill(board, start_pos, allow_start_in_occupied_cell=False):
@@ -62,21 +68,23 @@ def find_safest_position(current_position, direction, board):
         sector_width = (bounds[1][0] - bounds[0][0])
         sector_height = (bounds[1][1] - bounds[0][1])
 
+        if depth == max_depth or (sector_height * sector_width <= 1):
+            return sorted(carry, key=lambda x: x[1])[:3]
+
         center_point = (
             int(offset[0] + floor(sector_width / 2)),
             int(offset[1] + floor(sector_height / 2))
         )
 
-        if depth == max_depth or (sector_height * sector_width <= 1):
-            return sorted(carry, key=lambda x: x[1])[:3]
-
         # filter cells that we've already rated
         carry_cells = [cell[0] for cell in carry]
-        surrounding_ratings = [
-            ((cell[0], cell[1]), _rate_cell((cell[0], cell[1]), board, True))
-            for cell in surrounding(center_point)
-            if cell not in carry_cells and board.inside(cell) and board.get_cell(cell) != SNAKE
-        ]
+
+        surrounding_ratings = []
+        for cell in surrounding(center_point):
+            if cell not in carry_cells and board.inside(cell) and board.get_cell(cell) != SNAKE:
+                surrounding_ratings.append(
+                    ((cell[0], cell[1]), _rate_cell((cell[0], cell[1]), board))
+                )
 
         # randomize to remove bias towards last in surrounding list
         random.shuffle(surrounding_ratings)
@@ -110,20 +118,20 @@ def find_safest_position(current_position, direction, board):
 
     # set up initial bounds
     if direction == "up":
-        bounds = [(0, 0), (board.width, current_position[1])]
+        bounds = [(0, 0), ((board.width-1), current_position[1])]
     elif direction == "down":
-        bounds = [(0, current_position[1]), (board.width, board.height)]
+        bounds = [(0, current_position[1]), ((board.width-1), (board.height-1))]
     elif direction == "right":
-        bounds = [(current_position[0], 0), (board.width, board.height)]
+        bounds = [(current_position[0], 0), ((board.width-1), (board.height-1))]
     else:  # left
-        bounds = [(0, 0), (current_position[0], board.height)]
+        bounds = [(0, 0), (current_position[0], (board.height-1))]
 
     return _find_safest(bounds, bounds[0])
 
 
 def find_food(current_position, health_remaining, board, board_food):
     """ finds and rates food positions """
-    rated_food = [(food, _rate_cell(food, board, True)) for food in board_food]
+    rated_food = [(food, _rate_cell(food, board)) for food in board_food]
     return sorted(rated_food, key=lambda x: x[1], reverse=True)
 
 
