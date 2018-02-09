@@ -91,7 +91,7 @@ def need_food(board, bad_positions, snake):
         # If it's contested but not going to get immediately taken and we are in possible distance of getting it then move one step closer
         for food in contested_food:
             if dist(food, snake.head) <= snake.attributes['health'] and food not in bad_positions:
-                food_to_get.append(food)                
+                food_to_get.append(food)
 
     return (food_to_get if len(food_to_get) > 0 else None)
 
@@ -127,7 +127,7 @@ def check_attack(board, potential_snake_positions, bad_positions, snake):
 
         direction = sub(enemy.coords[0], enemy.coords[1])
         if direction[0] != 0 and enemy.head[1] in [snake.head[1] - 1, snake.head[1] + 1]:  # moving in the x plane and our head is one row off
-            for x in range(1, abs(enemy.head[0] - snake.head[0])): # loop through whole body but not head
+            for x in range(1, abs(enemy.head[0] - snake.head[0])):  # loop through whole body but not head
                 position = (enemy.head[0] + direction[0] * x, enemy.head[1])  # find next path in tunnel
 
                 # if enemy snake is not in a tunnel for the paths leading up to our head then ignore snake
@@ -139,7 +139,7 @@ def check_attack(board, potential_snake_positions, bad_positions, snake):
                     possible_attacks.append((snake.head[0], enemy.head[1]))
 
         elif enemy.head[0] in [snake.head[0] - 1, snake.head[0] + 1]:  # moving in the y plane and our head is one column off
-            for x in range(1, abs(enemy.head[1] - snake.head[1])): # loop through whole body but not head
+            for x in range(1, abs(enemy.head[1] - snake.head[1])):  # loop through whole body but not head
                 position = (enemy.head[0], enemy.head[1] + direction[1] * x)  # find next path in tunnel
 
                 # if enemy snake is not in a tunnel for the paths leading up to our head then ignore snake

@@ -6,7 +6,8 @@ from copy import deepcopy
 from collections import deque
 
 from .utils import neighbours, surrounding, sub
-from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, SNAKE, FOOD, SPOILED
+from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED
+
 
 def _rate_cell(cell, board, bloom_level=10):
     """ rates a cell based on proximity to other snakes, food, the edge of the board, etc """
@@ -15,7 +16,7 @@ def _rate_cell(cell, board, bloom_level=10):
     # Get all the cells of "bloom_level" number of circles surrounding the given cell.
     for x in range(-bloom_level, bloom_level+1):
         for y in range(-bloom_level, bloom_level+1):
-            division_factor = max(abs(x),abs(y))
+            division_factor = max(abs(x), abs(y))
             if division_factor == 0:
                 division_factor = 1
             if board.inside((cell[0]+x, cell[1]+y)):
@@ -153,7 +154,6 @@ def bfs(starting_position, target_position, board, exclude, return_list):
             path.insert(0, (node[0], node[1]))  # Reverse
             node = node[2]
         return return_list.append(path[1:])
-
 
     x = starting_position[0]
     y = starting_position[1]
