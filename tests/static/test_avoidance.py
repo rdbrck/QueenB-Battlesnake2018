@@ -82,15 +82,6 @@ class TestAvoidanceLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertTrue(response.json()['move'] != 'left')
 
-    def test_stuck_between_corner_and_snake_last_chance(self):
-        """ only chance for survival is to go where bigger snake's head might be """
-        data = TestGameData()
-        data.set_self([(0, 0), (0, 1), (0, 2)], health=10)
-        data.add_enemy([(1, 1), (1, 2), (1, 3), (1, 4)])
-
-        response = requests.post(TEST_INSTANCE,  json=data.data)
-        self.assertEqual(response.json()['move'], 'right')
-
     def test_stuck_between_two_snakes_turn_into_shorter_one(self):
         """ stuck between two snakes collide head on with shorter one """
         data = TestGameData()
