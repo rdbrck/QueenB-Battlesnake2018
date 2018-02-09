@@ -70,7 +70,7 @@ def move():
 
         # Flood fill in each direction to find bad directions
         with timing("intial flood fill", time_remaining):
-            number_of_squares = list()
+            number_of_squares = []
 
             # Get size of space we can safely move into (should be larger than body size)
             safe_space_size = snake.attributes.get('length', 10) * SAFE_SPACE_FACTOR
@@ -104,7 +104,7 @@ def move():
             with timing("find_food", time_remaining):
                 food_positions = find_food(snake.head, snake.attributes['health'], board, food)
                 positions = [position[0] for position in food_positions]
-                thread_pool = list()
+                thread_pool = []
 
                 for position in positions:
                     t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
@@ -125,7 +125,7 @@ def move():
             with timing("find_safest_position", time_remaining):
                 positions = find_safest_position(snake.head, general_direction(board, snake, bad_positions), board)
                 positions = [position[0] for position in positions]
-                thread_pool = list()
+                thread_pool = []
 
                 for position in positions:
                     t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
