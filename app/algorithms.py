@@ -10,7 +10,7 @@ from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED
 from .constants import FOOD_RATING, SPOILED_RATING, EMPTY_RATING, BODY_RATING, ENEMY_RATING, OUT_SIDE_BOARD_RATING
 
 
-def _rate_cell(cell, board, bloom_level=10):
+def _rate_cell(cell, board, bloom_level=3):
     """ rates a cell based on proximity to other snakes, food, the edge of the board, etc """
 
     cells = []
