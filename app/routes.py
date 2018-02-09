@@ -145,7 +145,7 @@ def move():
     # setup the board for fallback and verification
     with timing("setup fallback and verification board", time_remaining):
         for enemy in board.snakes:
-            if enemy.attributes['id'] != snake.attributes['id'] and (len(board.food) == 0 or snake.closest_food(board.food)[1] > dist(snake.head, enemy.tail)):
+            if enemy.attributes['id'] != snake.attributes['id'] and (len(board.food) == 0 or enemy.closest_food(board.food)[1] < dist(snake.head, enemy.tail)):
                 board.set_cell(enemy.tail, 0)
 
     # If code above failed then fallback to a floodfill style move
