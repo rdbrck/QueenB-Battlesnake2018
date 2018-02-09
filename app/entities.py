@@ -67,10 +67,13 @@ class Board(object):
             self.height = kwargs['height']
             self.cells = []
             self.meta_cells = []
+            self.own_snake_id = kwargs['you']['id']
 
             for x in range(self.width):
                 self.cells.append([EMPTY] * self.height)
                 self.meta_cells.append([None] * self.height)
+
+            # print(kwargs['you'])
 
             # Only take snakes that are alive
             self.snakes = [Snake(**s) for s in kwargs['snakes']['data']]

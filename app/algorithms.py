@@ -7,6 +7,7 @@ from collections import deque
 
 from .utils import neighbours, surrounding, sub
 from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED
+from .constants import FOOD_RATING, SPOILED_RATING, EMPTY_RATING, BODY_RATING, ENEMY_RATING, OUT_SIDE_BOARD_RATING
 
 
 def _rate_cell(cell, board, bloom_level=10):
@@ -19,13 +20,27 @@ def _rate_cell(cell, board, bloom_level=10):
             division_factor = max(abs(x), abs(y))
             if division_factor == 0:
                 division_factor = 1
-            if board.inside((cell[0]+x, cell[1]+y)):
-                cells.append((cell[0]+x, cell[1]+y, division_factor))
+            cells.append(((cell[0]+x, cell[1]+y), division_factor))
 
-    m_cells = [(m_cell, board.get_cell((m_cell[0], m_cell[1]))) for m_cell in cells]
-    cell_value = reduce(lambda carry, m_cell: carry + [1, -5, 2, -0.5][m_cell[1]]/m_cell[0][2], m_cells, 0)
+    # m_cells = [
+    #     (m_cell, board.get_cell((m_cell[0], m_cell[1]))) for m_cell in cells]
 
-    return cell_value
+    # EMPTY = 0
+    # SNAKE = 1
+    # FOOD = 2
+    # SPOILED = 3
+    cell_weightings = [EMPTY_RATING, ENEMY_RATING, FOOD_RATING, SPOILED_RATING, BODY_RATING, OUT_SIDE_BOARD_RATING]
+    own_snake = board.get_snake(board.own_snake_id)
+    cell_values = []
+    for m_cell in cells:
+        weight_key = 5  # Outside the board
+        if board.inside(m_cell[0]):
+            weight_key = board.get_cell(m_cell[0])
+        if m_cell[0] in own_snake.body:
+            weight_key = 4
+        cell_values.append((weight_key, m_cell[1]))
+
+    return reduce(lambda carry, m_cell: carry + cell_weightings[m_cell[0]]/m_cell[1], cell_values, 0)
 
 
 def flood_fill(board, start_pos, allow_start_in_occupied_cell=False):
