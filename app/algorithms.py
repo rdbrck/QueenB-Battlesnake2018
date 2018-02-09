@@ -6,7 +6,7 @@ from copy import deepcopy
 from collections import deque
 
 from .utils import neighbours, surrounding, sub
-from .constants import DIR_NAMES, DIR_VECTORS, SNAKE
+from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, SNAKE, FOOD, SPOILED
 
 
 def _rate_cell(cell, board, recurse=False):
@@ -146,13 +146,14 @@ def bfs(starting_position, target_position, board, exclude, return_list):
             node = node[2]
         return return_list.append(path[1:])
 
+
     x = starting_position[0]
     y = starting_position[1]
     board_copy = deepcopy(board)
-    board_copy.set_cell((x, y), 0)
+    board_copy.set_cell((x, y), EMPTY)
 
     for excluded_point in exclude:
-        board_copy.set_cell(excluded_point, "B")
+        board_copy.set_cell(excluded_point, SPOILED)
 
     queue = deque([(x, y, None)])
 
@@ -161,17 +162,16 @@ def bfs(starting_position, target_position, board, exclude, return_list):
         x = node[0]
         y = node[1]
 
-        if board_copy.inside((x, y)):
-            if (x, y) == target_position:  # If we reach target_position
-                return _get_path_from_nodes(node)  # Rebuild path
+        if (x, y) == target_position:  # If we reach target_position
+            return _get_path_from_nodes(node)  # Rebuild path
 
-            if (board_copy.outside((x, y)) or board_copy.get_cell((x, y)) == "B" or board_copy.get_cell((x, y)) == 1) and not (x, y) == starting_position:  # Snakes
-                continue
+        if (board_copy.get_cell((x, y)) == SPOILED or board_copy.get_cell((x, y)) == SNAKE) and not (x, y) == starting_position:
+            continue
 
-            board_copy.set_cell((x, y), "B")  # Mark as explored
+        board_copy.set_cell((x, y), SPOILED)  # Mark as explored
 
-            for i in neighbours(node):
-                if board.inside((i[0], i[1])):
-                    queue.append((i[0], i[1], node))
+        for i in neighbours(node):
+            if board_copy.inside((i[0], i[1])):
+                queue.append((i[0], i[1], node))
 
     return None  # No path

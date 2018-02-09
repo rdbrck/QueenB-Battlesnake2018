@@ -1,5 +1,6 @@
 # flake8: noqa
 import random
+import logging
 
 SNAKE_NAME = "BETTER THAN ALEKSIY\'S SNAKE"
 SNAKE_COLOR = "#ff0000"
@@ -67,3 +68,5 @@ SPOILED_RATING = 1
 EMPTY_RATING = 0.5
 BODY_RATING = -1
 ENEMY_RATING = -2
+
+LOG_LEVEL = logging.DEBUG
