@@ -67,7 +67,7 @@ class TestFoodLogic(unittest.TestCase):
         data.add_enemy([(3, 7), (3, 8), (3, 9)])
 
         response = requests.post(TEST_INSTANCE,  json=data.data)
-        self.assertEqual(response.json()['move'], 'left')
+        self.assertEqual(response.json()['move'], 'right')
 
     def test_contested_close_equal(self):
         """ contested food - close - same size - move a spot closer maybe other snake isn't going for it """
