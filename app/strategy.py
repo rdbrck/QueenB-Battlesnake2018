@@ -1,7 +1,6 @@
 from .utils import dist, neighbours, sub
 from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, FOOD_MEDIUM_DIST, FOOD_HUNGRY_HEALTH, FOOD_HEALTH_IGNORE, SPOILED, SNAKE,\
                        FOOD_RATING, ENEMY_RATING, BODY_RATING, EMPTY_RATING, SPOILED_RATING
-from .entities import Board
 
 
 def general_direction(board, snake, bad_positions):
