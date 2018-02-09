@@ -3,6 +3,19 @@ from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, F
                        FOOD_RATING, ENEMY_RATING, BODY_RATING, EMPTY_RATING, SPOILED_RATING
 
 
+def _add_count_directions(directions, index, pos, head):
+    if pos[0] > head[0]:
+        directions['right'][index] += 1
+    elif pos[0] < head[0]:
+        directions['left'][index] += 1
+    if pos[1] < head[1]:
+        directions['up'][index] += 1
+    elif pos[1] > head[1]:
+        directions['down'][index] += 1
+
+    return directions
+
+
 def general_direction(board, snake, bad_positions):
     """ Returns the most 'beneficial' general direction to move in terms of board position """
     directions = {
@@ -41,14 +54,7 @@ def general_direction(board, snake, bad_positions):
         if pos in snake.body:
             continue
 
-        if pos[0] > snake.head[0]:
-            directions['right']['enemy'] += 1
-        elif pos[0] < snake.head[0]:
-            directions['left']['enemy'] += 1
-        if pos[1] < snake.head[1]:
-            directions['up']['enemy'] += 1
-        elif pos[1] > snake.head[1]:
-            directions['down']['enemy'] += 1
+        directions = _add_count_directions(directions, 'enemy', pos, snake.head)
 
     # set snakes as bad and self as okay
     for enemy in board.snakes:
@@ -56,15 +62,7 @@ def general_direction(board, snake, bad_positions):
         if enemy.attributes['id'] != snake.attributes['id']:
             index = 'enemy'
 
-        for pos in enemy.coords:
-            if pos[0] > snake.head[0]:
-                directions['right'][index] += 1
-            elif pos[0] < snake.head[0]:
-                directions['left'][index] += 1
-            if pos[1] < snake.head[1]:
-                directions['up'][index] += 1
-            elif pos[1] > snake.head[1]:
-                directions['down'][index] += 1
+        directions = _add_count_directions(directions, index, pos, snake.head)
 
     # set food as good
     for fud in board.food:
@@ -72,14 +70,7 @@ def general_direction(board, snake, bad_positions):
         if board.get_cell(pos) == SPOILED:
             index = 'spoiled'
 
-        if pos[0] > snake.head[0]:
-            directions['right'][index] += 1
-        elif pos[0] < snake.head[0]:
-            directions['left'][index] += 1
-        if pos[1] < snake.head[1]:
-            directions['up'][index] += 1
-        elif pos[1] > snake.head[1]:
-            directions['down'][index] += 1
+        directions = _add_count_directions(directions, index, pos, snake.head)
 
     # find best general direction
     best_direction = None
