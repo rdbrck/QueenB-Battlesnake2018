@@ -108,10 +108,6 @@ def move():
 
                 for position in positions:
                     t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
-<<<<<<< HEAD
-=======
-
->>>>>>> e3d4be6... attack-avoidance: cleanup
                     thread_pool.append(t)
 
                 for thread in thread_pool:
@@ -133,10 +129,6 @@ def move():
 
                 for position in positions:
                     t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
-<<<<<<< HEAD
-=======
-
->>>>>>> e3d4be6... attack-avoidance: cleanup
                     thread_pool.append(t)
 
                 for thread in thread_pool:
