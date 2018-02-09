@@ -109,6 +109,15 @@ class TestAvoidanceLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'down')
 
+    def test_avoid_moving_into_possible_cut_off_trap(self):
+        """ do not move into a tunnel that could easily become a trap """
+        data = TestGameData()   
+        data.set_self([(0, 3), (1, 3), (2, 3)], health=10)
+        data.add_enemy([(1, 6), (1, 5), (1, 4), (2, 4), (3, 4)])
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertEqual(response.json()['move'], 'up')
+
     def test_dont_trap_self(self):
         """ do not enter boxed off region that is smaller than body """
         data = TestGameData()
