@@ -1,6 +1,6 @@
 from .entities import Board
 from .strategy import need_food, check_attack, general_direction
-from .utils import timing, get_direction, add, neighbours
+from .utils import timing, get_direction, add, neighbours, dist
 from .algorithms import bfs, find_safest_position, find_food, flood_fill
 from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS,\
                        SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR, LOG_LEVEL
@@ -142,15 +142,21 @@ def move():
     except Exception as e:
         logger.error("Code failure - %s \n %s" % (str(e), str(traceback.format_exc())))
 
+    # setup the board for fallback and verification
+    with timing("setup fallback and verification board", time_remaining):
+        for enemy in board.snakes:
+            if enemy.attributes['id'] != snake.attributes['id'] and (len(board.food) == 0 or snake.closest_food(board.food)[1] > dist(snake.head, enemy.tail)):
+                board.set_cell(enemy.tail, 0)
+
     # If code above failed then fallback to a floodfill style move
     if not move:
         logger.info("CHANGED MOVE - floodfill fallback.")
         with timing("floodfill fallback", time_remaining):
             temp_board = Board(clone=board)
-            for pos in bad_positions:
+            for pos in potential_snake_positions:
                 temp_board.set_cell(pos, 1)
 
-            # try flood fill with bad positionns included
+            # try flood fill with bad positionns and no worry tails included
             floods = {
                 "up": len(flood_fill(temp_board, (snake.head[0], snake.head[1]-1))),
                 "down": len(flood_fill(temp_board, (snake.head[0], snake.head[1]+1))),
@@ -158,8 +164,8 @@ def move():
                 "left": len(flood_fill(temp_board, (snake.head[0]-1, snake.head[1])))
             }
 
-            # fallback if all of those are bad to see if we can chance a good move
-            if all(direction < safe_space_size for direction in floods.values()):
+            # less restrictive as it doesn't look at the potential next move
+            if all(direction < snake.attributes['length'] for direction in floods.values()):
                 floods = {
                     "up": len(flood_fill(board, (snake.head[0], snake.head[1]-1))),
                     "down": len(flood_fill(board, (snake.head[0], snake.head[1]+1))),
@@ -178,6 +184,7 @@ def move():
                 m_move = add(snake.head, DIR_VECTORS[DIR_NAMES.index(direction)])
                 if board.inside(m_move) and board.get_cell(m_move) != 1:
                     move = direction
+                    break
 
     return {
         'move': move  # 'up' | 'down' | 'left' | 'right'

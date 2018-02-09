@@ -38,6 +38,18 @@ class Snake(object):
     def potential_positions(self):
         return [add(self.head, d) for d in DIR_VECTORS if d != sub((0, 0), self.direction)]
 
+    def closest_food(self, food):
+        if not food:
+            return None
+
+        closest = (food[0], dist(food[0], self.head))
+        for fud in food:
+            distance = dist(fud, self.head)
+            if distance < closest[1]:
+                closest = (fud, distance)
+
+        return closest
+
 
 class Board(object):
     """
