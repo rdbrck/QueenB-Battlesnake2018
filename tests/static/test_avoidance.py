@@ -144,7 +144,6 @@ class TestAvoidanceLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'right')
 
-    @unittest.skip("This fails. sometimes chooses suicide rather than move into _potentially_ dangerous square")
     def test_corner_must_turn_into_tail(self):
         """ only option is to turn where tail _could_ be if enemy grows """
         data = TestGameData()
@@ -154,24 +153,23 @@ class TestAvoidanceLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'right')
 
-    def test_if_trapped_choose_smaller_trap_small_body(self):
-        """ if given two dead ends, choose the larger one """
+
+    def test_if_trapped_choose_smaller_trap_small_body_tail(self):
+        """ if given two dead ends, choose one the snake can escape - tail regarding food """
         data = TestGameData()
-        # size 5 body
-        data.set_self(
-            [(3, 0), (3, 1), (3, 2), (3, 3), (3, 4)],
-            health=10
-        )
+        # size 3 body
+        data.set_self([(3, 0), (3, 1), (3, 2)], health=10)
         # size 3 region
         data.add_enemy([(0, 1), (1, 1), (2, 1)])
         # size 2 region
-        data.add_enemy([(6, 0), (6, 1), (5, 1), (4, 1)])
+        data.add_enemy([(6, 0), (6, 1), (5, 1), (4, 1), (4, 2)])
+        data.set_food([(7, 0)])
 
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'left')
 
-    def test_if_trapped_choose_smaller_trap_large_body(self):
-        """ if given two dead ends, choose the larger one """
+    def test_if_trapped_choose_smaller_trap_large_body_food(self):
+        """ if given two dead ends, choose the one that will open up according to the distance of our snake to the tail """
         data = TestGameData()
         # size 24 body
         data.set_self(
@@ -193,9 +191,10 @@ class TestAvoidanceLogic(unittest.TestCase):
                 (9, 3), (9, 2), (9, 1), (9, 0)
             ]
         )
+        data.set_food([(6, 4)])
 
         response = requests.post(TEST_INSTANCE,  json=data.data)
-        self.assertEqual(response.json()['move'], 'left')
+        self.assertEqual(response.json()['move'], 'right')
 
     def test_trap_self_if_absolutely_necessary(self):
         """ enter boxed off region that is smaller than body if other paths kill us """
