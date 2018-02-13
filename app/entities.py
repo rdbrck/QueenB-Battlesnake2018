@@ -67,6 +67,7 @@ class Board(object):
             self.height = clone.height
             self.cells = []
             self.meta_cells = []
+            self.own_snake_id = clone.own_snake_id
 
             for x in range(self.width):
                 self.cells.append(clone.cells[x].copy())

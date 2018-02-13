@@ -90,7 +90,8 @@ def move():
         with timing("check_attack", time_remaining):
             attack = check_attack(board, potential_snake_positions, bad_positions, snake)
 
-        bad_positions.extend(potential_snake_positions)
+        # combine and get rid of duplicates
+        bad_positions = list(set(potential_snake_positions + bad_positions))
         # Check if we need food (or if there is any that we can reach)
         with timing("need_food", time_remaining):
             food = need_food(board, bad_positions, snake)
@@ -123,7 +124,7 @@ def move():
         # If we don't need food and don't have the opportunity to attack then find a path to a "good" position on the board
         if not move:
             with timing("find_safest_positions", time_remaining):
-                positions = find_safest_positions(snake.head, general_direction(board, snake, bad_positions), board)
+                positions = find_safest_positions(snake.head, general_direction(board, snake, bad_positions), board, bad_positions)
                 positions = [position[0] for position in positions]
                 thread_pool = []
 

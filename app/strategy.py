@@ -73,6 +73,22 @@ def general_direction(board, snake, bad_positions):
 
         directions = _add_count_directions(directions, index, fud, snake.head)
 
+    # get rid of directions that are blocked by bad_positions such as tunnels
+    temp_directions = directions.copy()
+    for pos in bad_positions:
+        if pos == (snake.head[0] + 1, snake.head[1]):
+            temp_directions.pop('right')
+        elif pos == (snake.head[0] - 1, snake.head[1]):
+            temp_directions.pop('left')
+        elif pos == (snake.head[0], snake.head[1] + 1):
+            temp_directions.pop('up')
+        elif pos == (snake.head[0], snake.head[1] - 1):
+            temp_directions.pop('down')
+
+    # only use the dictionary with removed positions if there is atleast one left
+    if len(temp_directions) > 0:
+        directions = temp_directions
+
     # find best general direction
     best_direction = None
     for direction, stats in directions.items():
