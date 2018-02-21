@@ -153,6 +153,19 @@ class TestAvoidanceLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'right')
 
+    def test_tunnel_self_max_health(self):
+        """ only option is to turn where tail _could_ be if enemy grows """
+        data = TestGameData()
+        data.set_self([
+            (18, 0), (18, 1), (18, 2), (18, 3), (18, 4), (18, 5),
+            (18, 6), (18, 7), (18, 8), (18, 9), (18, 10), (18, 11),
+            (18, 12), (18, 13), (18, 14), (18, 15), (18, 16), (18, 17),
+            (18, 18), (18, 19), (17, 19), (16, 19), (15, 19), (14, 19)])
+        data.add_enemy([(1, 1), (1, 0)])
+        data.set_food([(19, 0)])
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertEqual(response.json()['move'], 'left')
 
     def test_if_trapped_choose_smaller_trap_small_body_tail(self):
         """ if given two dead ends, choose one the snake can escape - tail regarding food """

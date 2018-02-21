@@ -6,8 +6,9 @@ from copy import deepcopy
 from collections import deque
 
 from .utils import neighbours, surrounding, sub
-from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED
-from .constants import FOOD_RATING, SPOILED_RATING, EMPTY_RATING, BODY_RATING, ENEMY_RATING, OUT_SIDE_BOARD_RATING
+from .entities import Board
+from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED,\
+                       FOOD_RATING, SPOILED_RATING, EMPTY_RATING, BODY_RATING, ENEMY_RATING, OUT_SIDE_BOARD_RATING
 
 
 
@@ -68,12 +69,15 @@ def flood_fill(board, start_pos, allow_start_in_occupied_cell=False):
     return visited
 
 
-def find_safest_positions(current_position, direction, board):
+def find_safest_positions(current_position, direction, board, bad_positions):
     """
     finds a position in a binary-search like fashion, this could probably just
     linearly scan the whole board, rating every position, and then returning the highest n
     positions
     """
+    temp_board = Board(clone=board)
+    for pos in bad_positions:
+        temp_board.set_cell(pos, SNAKE)
 
     # set up initial bounds
     bound_x = current_position[0]+1 if current_position[0] != (board.width-1) else current_position[0]
@@ -98,7 +102,7 @@ def find_safest_positions(current_position, direction, board):
             checkerboard_count += 1
             if (checkerboard_count % skip_cell_modulous) == 0:
                 continue
-            potential_cells.append(((x, y), _rate_cell((x, y), board)))
+            potential_cells.append(((x, y), _rate_cell((x, y), temp_board)))
     results = sorted(potential_cells, key=lambda x: x[1], reverse=True)
     return results[:5]
 
