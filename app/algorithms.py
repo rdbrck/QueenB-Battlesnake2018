@@ -10,7 +10,8 @@ from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED
 from .constants import FOOD_RATING, SPOILED_RATING, EMPTY_RATING, BODY_RATING, ENEMY_RATING, OUT_SIDE_BOARD_RATING
 
 
-def _rate_cell(cell, board, bloom_level=3):
+
+def _rate_cell(cell, board, bloom_level=4):
     """ rates a cell based on proximity to other snakes, food, the edge of the board, etc """
 
     cells = []
@@ -67,80 +68,39 @@ def flood_fill(board, start_pos, allow_start_in_occupied_cell=False):
     return visited
 
 
-def find_safest_position(current_position, direction, board):
+def find_safest_positions(current_position, direction, board):
     """
     finds a position in a binary-search like fashion, this could probably just
     linearly scan the whole board, rating every position, and then returning the highest n
     positions
     """
 
-    # the whole board
-    m_bounds = [(0, 0), (board.width, board.height)]
-    max_depth = 10
-
-    def _find_safest(bounds=m_bounds, offset=(0, 0), depth=0, carry=[]):
-        sector_width = (bounds[1][0] - bounds[0][0])
-        sector_height = (bounds[1][1] - bounds[0][1])
-
-        if depth == max_depth or (sector_height * sector_width <= 1):
-            return sorted(carry, key=lambda x: x[1])[:3]
-
-        center_point = (
-            int(offset[0] + floor(sector_width / 2)),
-            int(offset[1] + floor(sector_height / 2))
-        )
-
-        # filter cells that we've already rated
-        carry_cells = [cell[0] for cell in carry]
-
-        surrounding_ratings = []
-        for cell in surrounding(center_point):
-            if cell not in carry_cells and board.inside(cell) and board.get_cell(cell) != SNAKE:
-                surrounding_ratings.append(
-                    ((cell[0], cell[1]), _rate_cell((cell[0], cell[1]), board))
-                )
-
-        # randomize to remove bias towards last in surrounding list
-        random.shuffle(surrounding_ratings)
-        position, rating = reduce(lambda m_carry, cell: cell if cell[1] > m_carry[1] else m_carry, surrounding_ratings, (None, -100000000000))
-
-        new_bounds = bounds
-        if position is not None:
-            carry = carry + [(position, rating)]
-            direction_vector = sub(position, center_point)
-
-            # diagonal
-            if abs(direction_vector[0]) == abs(direction_vector[1]):
-                direction_vector = list(direction_vector)  # tuples are immutable
-                direction_vector[int(time.time()) % 2] = 0  # 300% faster than random.randint()
-                direction_vector = tuple(direction_vector)  # back to tuple because DIR_VECTOR contains tuples
-
-            direction = DIR_NAMES[DIR_VECTORS.index(direction_vector)]
-
-            if direction == "up":
-                new_bounds = [offset, (bounds[1][0], bounds[1][1])]
-            elif direction == "down":
-                offset = (offset[0], center_point[1])
-                new_bounds = [offset, (bounds[1][0], bounds[1][1])]
-            elif direction == "left":
-                new_bounds = [offset, (center_point[0], bounds[1][1])]
-            else:  # right
-                offset = (center_point[0], offset[1])
-                new_bounds = [offset, (bounds[0][0], bounds[1][1])]
-
-        return _find_safest(new_bounds, offset, depth + 1, carry=carry)
-
     # set up initial bounds
+    bound_x = current_position[0]+1 if current_position[0] != (board.width-1) else current_position[0]
+    bound_y = current_position[1]+1 if current_position[1] != (board.height-1) else current_position[1]
     if direction == "up":
-        bounds = [(0, 0), ((board.width-1), current_position[1])]
+        bounds = [(0, 0), ((board.width-1), bound_y)]
     elif direction == "down":
-        bounds = [(0, current_position[1]), ((board.width-1), (board.height-1))]
+        bounds = [(0, bound_y), ((board.width-1), (board.height-1))]
     elif direction == "right":
-        bounds = [(current_position[0], 0), ((board.width-1), (board.height-1))]
+        bounds = [(bound_x, 0), ((board.width-1), (board.height-1))]
     else:  # left
-        bounds = [(0, 0), (current_position[0], (board.height-1))]
+        bounds = [(0, 0), (bound_x, (board.height-1))]
 
-    return _find_safest(bounds, bounds[0])
+    # Create a checkerboard of positions to check
+    skip_cell_modulous = 2
+    potential_cells = []
+    checkerboard_count = 0
+    for x in range(bounds[0][0], bounds[1][0]+1):
+        if checkerboard_count != 0:
+            checkerboard_count += 1
+        for y in range(bounds[0][1], bounds[1][1]+1):
+            checkerboard_count += 1
+            if (checkerboard_count % skip_cell_modulous) == 0:
+                continue
+            potential_cells.append(((x, y), _rate_cell((x, y), board)))
+    results = sorted(potential_cells, key=lambda x: x[1], reverse=True)
+    return results[:5]
 
 
 def find_food(current_position, health_remaining, board, board_food):

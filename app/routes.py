@@ -1,7 +1,7 @@
 from .entities import Board
 from .strategy import need_food, check_attack, general_direction
 from .utils import timing, get_direction, add, neighbours, dist
-from .algorithms import bfs, find_safest_position, find_food, flood_fill
+from .algorithms import bfs, find_safest_positions, find_food, flood_fill
 from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS,\
                        SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR, LOG_LEVEL
 
@@ -122,8 +122,8 @@ def move():
 
         # If we don't need food and don't have the opportunity to attack then find a path to a "good" position on the board
         if not move:
-            with timing("find_safest_position", time_remaining):
-                positions = find_safest_position(snake.head, general_direction(board, snake, bad_positions), board)
+            with timing("find_safest_positions", time_remaining):
+                positions = find_safest_positions(snake.head, general_direction(board, snake, bad_positions), board)
                 positions = [position[0] for position in positions]
                 thread_pool = []
 
