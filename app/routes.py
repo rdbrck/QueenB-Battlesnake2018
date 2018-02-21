@@ -124,21 +124,23 @@ def move():
         # If we don't need food and don't have the opportunity to attack then find a path to a "good" position on the board
         if not move:
             with timing("find_safest_positions", time_remaining):
-                positions = find_safest_positions(snake.head, general_direction(board, snake, bad_positions), board, bad_positions)
-                positions = [position[0] for position in positions]
-                thread_pool = []
+                best_direction = general_direction(board, snake, bad_positions)
+                if best_direction:  # if this doesn't pass we are in a very poor position and need to fallback
+                    positions = find_safest_positions(snake.head, best_direction, board, bad_positions)
+                    positions = [position[0] for position in positions]
+                    thread_pool = []
 
-                for position in positions:
-                    t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
-                    thread_pool.append(t)
+                    for position in positions:
+                        t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
+                        thread_pool.append(t)
 
-                for thread in thread_pool:
-                    thread.start()
-                    thread.join()
+                    for thread in thread_pool:
+                        thread.start()
+                        thread.join()
 
-                if len(next_move) > 0:  # No good path so we need to do a fallback move
-                    path = max(next_move, key=len)
-                    move = get_direction(snake.head, path[0])
+                    if len(next_move) > 0:  # No good path so we need to do a fallback move
+                        path = max(next_move, key=len)
+                        move = get_direction(snake.head, path[0])
 
     except Exception as e:
         logger.error("Code failure - %s \n %s" % (str(e), str(traceback.format_exc())))

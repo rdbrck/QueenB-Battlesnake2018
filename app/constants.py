@@ -57,6 +57,7 @@ FOOD_CLOSE_DIST = 5  # The distance food is away to be considered close
 FOOD_MEDIUM_HEALTH = 80  # Between this and close distance is medium distance 
 FOOD_MEDIUM_DIST = 10  # How many moves away is a medium distance food
 FOOD_HUNGRY_HEALTH = 70  # When we should start going for all safe food and contested food if there isn't safe food
+FOOD_DANGEROUS = 10  # If below value in health go for potentially dangerous food
 
 DISABLE_ATTACKING = False  # Set to True to disable attack logic
 
