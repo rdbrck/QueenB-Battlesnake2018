@@ -92,8 +92,8 @@ class TestAvoidanceLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'left')
 
-    def test_collide_head_on_with_smaller_rather_than_trap(self):
-        """ choose head on collision with smaller snake rather than go into trap """
+    def test_corner_must_turn_into_tail(self):
+        """ only option is to turn where tail _could_ be if enemy grows """
         data = TestGameData()
         data.set_self(
             [
@@ -111,7 +111,7 @@ class TestAvoidanceLogic(unittest.TestCase):
 
     def test_avoid_moving_into_possible_cut_off_trap(self):
         """ do not move into a tunnel that could easily become a trap """
-        data = TestGameData()
+        data = TestGameData()   
         data.set_self([(0, 3), (1, 3), (2, 3)], health=10)
         data.add_enemy([(1, 6), (1, 5), (1, 4), (2, 4), (3, 4)])
 
@@ -225,3 +225,32 @@ class TestAvoidanceLogic(unittest.TestCase):
 
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'up')
+
+    def test_if_two_dead_ends_choose_one_with_tail_no_food(self):
+        """ only options are dead ends, don't go for bait, choose one with tail """
+        data = TestGameData()
+        data.set_self([(4, 4), (4, 3), (4, 2), (4, 1), (4, 0), 
+                       (3, 0), (2, 0), (1, 0), (0, 0), 
+                       (0, 1), (0, 2), (0, 3), (0, 4), (0, 5), 
+                       (1, 5), (2, 5), (3, 5), (4, 5), (5, 5), 
+                       (6, 5), (7, 5), (8, 5), (8, 4), (8, 3), 
+                       (8, 2), (8, 1), (8, 0), (7, 0), (6, 0)
+                       ], health=20)
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertEqual(response.json()['move'], 'right')
+
+    def test_if_two_dead_ends_choose_one_with_tail_food(self):
+        """ only options are dead ends, don't go for bait, choose one with tail """
+        data = TestGameData()
+        data.set_self([(4, 4), (4, 3), (4, 2), (4, 1), (4, 0), 
+                       (3, 0), (2, 0), (1, 0), (0, 0), 
+                       (0, 1), (0, 2), (0, 3), (0, 4), (0, 5), 
+                       (1, 5), (2, 5), (3, 5), (4, 5), (5, 5), 
+                       (6, 5), (7, 5), (8, 5), (8, 4), (8, 3), 
+                       (8, 2), (8, 1), (8, 0), (7, 0), (6, 0)
+                       ], health=20)
+        data.set_food([(1, 1)])
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertEqual(response.json()['move'], 'right')

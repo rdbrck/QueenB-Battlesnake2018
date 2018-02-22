@@ -61,6 +61,7 @@ FOOD_HUNGRY_HEALTH = 70  # When we should start going for all safe food and cont
 DISABLE_ATTACKING = False  # Set to True to disable attack logic
 
 SAFE_SPACE_FACTOR = 1.5
+TAIL_PREFERENCE_FACTOR = 1.5
 
 # Ratings for how important each thing is
 FOOD_RATING = 2

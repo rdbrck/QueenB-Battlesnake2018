@@ -3,7 +3,7 @@ from .strategy import need_food, check_attack, general_direction
 from .utils import timing, get_direction, add, neighbours, dist
 from .algorithms import bfs, find_safest_positions, find_food, flood_fill
 from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS,\
-                       SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR, LOG_LEVEL
+                       SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR, TAIL_PREFERENCE_FACTOR, LOG_LEVEL
 
 from functools import reduce
 from threading import Thread
@@ -71,20 +71,30 @@ def move():
         # Flood fill in each direction to find bad directions
         with timing("intial flood fill", time_remaining):
             number_of_squares = []
-
             # Get size of space we can safely move into (should be larger than body size)
             safe_space_size = snake.attributes.get('length', 10) * SAFE_SPACE_FACTOR
+            tail_pos = snake.body[-1]
             for cell in neighbours(snake.head):
                 if board.inside(cell):
-                    count = len(flood_fill(board, cell, False))
-                    number_of_squares.append((cell, count))
-                    if count <= safe_space_size:
+                    flooded_squares = flood_fill(board, cell, False)
+                    tail_present = bool(set(neighbours(tail_pos)) & set(flooded_squares))
+                    square_count = len(flooded_squares)
+                    number_of_squares.append([cell, square_count, tail_present])
+                    if square_count <= safe_space_size:
                         bad_positions.append(cell)
 
             # If all are bad don't set the largest as bad
             if set([cell[0] for cell in number_of_squares]).issubset(set(bad_positions)):
-                largest = reduce(lambda carry, direction: carry if carry[1] > direction[1] else direction, number_of_squares, number_of_squares[0])
-                bad_positions.remove(largest[0])
+                tail_weighted_squares = list(filter(lambda t: t[1] > 0, number_of_squares))
+                for square in number_of_squares:
+                    # if tail present
+                    if square[2]:
+                        # scale region size by TAIL_PREFERENCE_FACTOR
+                        square[1] *= TAIL_PREFERENCE_FACTOR
+
+                tail_weighted_squares.sort(key=lambda x: x[1])
+                tail_weighted_squares.reverse()
+                bad_positions.remove(tail_weighted_squares[0][0])
 
         # Check if we have the opportunity to attack
         with timing("check_attack", time_remaining):
