@@ -62,15 +62,32 @@ def general_direction(board, snake, bad_positions):
         if enemy.attributes['id'] != snake.attributes['id']:
             index = 'enemy'
 
-        directions = _add_count_directions(directions, index, pos, snake.head)
+        for pos in enemy.coords:
+            directions = _add_count_directions(directions, index, pos, snake.head)
 
     # set food as good
     for fud in board.food:
         index = 'food'
-        if board.get_cell(pos) == SPOILED:
+        if board.get_cell(fud) == SPOILED:
             index = 'spoiled'
 
-        directions = _add_count_directions(directions, index, pos, snake.head)
+        directions = _add_count_directions(directions, index, fud, snake.head)
+
+    # get rid of directions that are blocked by bad_positions such as tunnels
+    temp_directions = directions.copy()
+    for pos in bad_positions:
+        if pos == (snake.head[0] + 1, snake.head[1]):
+            temp_directions.pop('right')
+        elif pos == (snake.head[0] - 1, snake.head[1]):
+            temp_directions.pop('left')
+        elif pos == (snake.head[0], snake.head[1] + 1):
+            temp_directions.pop('up')
+        elif pos == (snake.head[0], snake.head[1] - 1):
+            temp_directions.pop('down')
+
+    # only use the dictionary with removed positions if there is atleast one left
+    if len(temp_directions) > 0:
+        directions = temp_directions
 
     # find best general direction
     best_direction = None

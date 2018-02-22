@@ -16,7 +16,7 @@ class Snake(object):
             self.coords = [(p['x'], p['y']) for p in kwargs['body']['data']]
 
     def __len__(self):
-        return self.length
+        return self.attributes['length']
 
     def _get_direction(self):
         assert len(self.coords) > 1
@@ -38,6 +38,18 @@ class Snake(object):
     def potential_positions(self):
         return [add(self.head, d) for d in DIR_VECTORS if d != sub((0, 0), self.direction)]
 
+    def closest_food(self, food):
+        if not food:
+            return None
+
+        closest = (food[0], dist(food[0], self.head))
+        for fud in food:
+            distance = dist(fud, self.head)
+            if distance < closest[1]:
+                closest = (fud, distance)
+
+        return closest
+
 
 class Board(object):
     """
@@ -54,9 +66,12 @@ class Board(object):
             self.width = clone.width
             self.height = clone.height
             self.cells = []
+            self.meta_cells = []
+            self.own_snake_id = clone.own_snake_id
 
             for x in range(self.width):
                 self.cells.append(clone.cells[x].copy())
+                self.meta_cells.append(clone.meta_cells[x].copy())
 
             self.snakes = [Snake(s) for s in clone.snakes]
             self.food = clone.food.copy()

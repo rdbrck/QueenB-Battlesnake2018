@@ -1,7 +1,7 @@
 from .entities import Board
 from .strategy import need_food, check_attack, general_direction
-from .utils import timing, get_direction, add, neighbours
-from .algorithms import bfs, find_safest_position, find_food, flood_fill
+from .utils import timing, get_direction, add, neighbours, dist
+from .algorithms import bfs, find_safest_positions, find_food, flood_fill
 from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS,\
                        SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR, TAIL_PREFERENCE_FACTOR, LOG_LEVEL
 
@@ -100,7 +100,8 @@ def move():
         with timing("check_attack", time_remaining):
             attack = check_attack(board, potential_snake_positions, bad_positions, snake)
 
-        bad_positions.extend(potential_snake_positions)
+        # combine and get rid of duplicates
+        bad_positions = list(set(potential_snake_positions + bad_positions))
         # Check if we need food (or if there is any that we can reach)
         with timing("need_food", time_remaining):
             food = need_food(board, bad_positions, snake)
@@ -132,8 +133,8 @@ def move():
 
         # If we don't need food and don't have the opportunity to attack then find a path to a "good" position on the board
         if not move:
-            with timing("find_safest_position", time_remaining):
-                positions = find_safest_position(snake.head, general_direction(board, snake, bad_positions), board)
+            with timing("find_safest_positions", time_remaining):
+                positions = find_safest_positions(snake.head, general_direction(board, snake, bad_positions), board, bad_positions)
                 positions = [position[0] for position in positions]
                 thread_pool = []
 
@@ -152,18 +153,42 @@ def move():
     except Exception as e:
         logger.error("Code failure - %s \n %s" % (str(e), str(traceback.format_exc())))
 
-    # If code above failed then fallback to a floodfill move
-    if not move:
-        logger.info("CHANGED MOVE - floodfill fallback.")
-        with timing("floodfill fallback", time_remaining):
-            floods = {
-                "up": len(flood_fill(board, (snake.head[0], snake.head[1]-1))),
-                "down": len(flood_fill(board, (snake.head[0], snake.head[1]+1))),
-                "right": len(flood_fill(board, (snake.head[0]+1, snake.head[1]))),
-                "left": len(flood_fill(board, (snake.head[0]-1, snake.head[1])))
-            }
+    try:
+        # setup the board for fallback and verification
+        with timing("setup fallback and verification board", time_remaining):
+            for enemy in board.snakes:
+                if enemy.attributes['id'] != snake.attributes['id'] and (len(board.food) == 0 or enemy.closest_food(board.food)[1] < dist(enemy.tail, snake.head)):
+                    board.set_cell(enemy.tail, 0)
 
-            move = max(iter(floods.keys()), key=(lambda key: floods[key]))
+        # If code above failed then fallback to a floodfill style move
+        if not move:
+            logger.info("CHANGED MOVE - floodfill fallback.")
+            with timing("floodfill fallback", time_remaining):
+                temp_board = Board(clone=board)
+                for pos in potential_snake_positions:
+                    temp_board.set_cell(pos, 1)
+
+                # try flood fill with bad positionns and no worry tails included
+                floods = {
+                    "up": len(flood_fill(temp_board, (snake.head[0], snake.head[1]-1))),
+                    "down": len(flood_fill(temp_board, (snake.head[0], snake.head[1]+1))),
+                    "right": len(flood_fill(temp_board, (snake.head[0]+1, snake.head[1]))),
+                    "left": len(flood_fill(temp_board, (snake.head[0]-1, snake.head[1])))
+                }
+
+                # less restrictive as it doesn't look at the potential next move
+                if all(direction < snake.attributes['length'] for direction in floods.values()):
+                    floods = {
+                        "up": len(flood_fill(board, (snake.head[0], snake.head[1]-1))),
+                        "down": len(flood_fill(board, (snake.head[0], snake.head[1]+1))),
+                        "right": len(flood_fill(board, (snake.head[0]+1, snake.head[1]))),
+                        "left": len(flood_fill(board, (snake.head[0]-1, snake.head[1])))
+                    }
+
+                move = max(iter(floods.keys()), key=(lambda key: floods[key]))
+    except Exception as e:
+        logger.error("Fallback failure - %s \n %s" % (str(e), str(traceback.format_exc())))
+        move = "up"  # Something is really messed up if this happens
 
     # Verify we didn't pick a bad move (wall or snake) - shouldn't happen but there if needed
     with timing("verify move", time_remaining):
@@ -174,6 +199,7 @@ def move():
                 m_move = add(snake.head, DIR_VECTORS[DIR_NAMES.index(direction)])
                 if board.inside(m_move) and board.get_cell(m_move) != 1:
                     move = direction
+                    break
 
     return {
         'move': move  # 'up' | 'down' | 'left' | 'right'

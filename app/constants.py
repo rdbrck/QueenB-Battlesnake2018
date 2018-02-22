@@ -2,10 +2,10 @@
 import random
 import logging
 
-SNAKE_NAME = "BETTER THAN ALEKSIY\'S SNAKE"
+SNAKE_NAME = "Rubber Ducky"
 SNAKE_COLOR = "#ff0000"
 SNAKE_SECONDARY_COLOR = "#ff0000"
-SNAKE_IMAGE = "uneil.gif"
+SNAKE_IMAGE = "duck.jpg"
 SNAKE_HEAD = "safe"
 SNAKE_TAIL = "freckled"
 
