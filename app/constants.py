@@ -61,11 +61,11 @@ FOOD_STEAL_DIST = FOOD_CLOSE_DIST + 2  # If we are within clost dist to a food a
 
 DISABLE_ATTACKING = False  # Set to True to disable attack logic
 
-SAFE_SPACE_FACTOR = 1.5
+SAFE_SPACE_FACTOR = 2
 
 # Ratings for how important each thing is
-FOOD_RATING = 4
-SPOILED_RATING = 3
+FOOD_RATING = 6
+SPOILED_RATING = 4
 BODY_RATING = 0.5
 EMPTY_RATING = 0.5
 ENEMY_RATING = -2
