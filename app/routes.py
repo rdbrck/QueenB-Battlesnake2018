@@ -74,11 +74,10 @@ def move():
 
             # Get size of space we can safely move into (should be larger than body size)
             safe_space_size = snake.attributes.get('length') * SAFE_SPACE_FACTOR
-            tail_pos = snake.body[-1]
             for cell in neighbours(snake.head):
                 if board.inside(cell):
                     flooded_squares = flood_fill(board, cell, False)
-                    tail_present = bool(set(neighbours(tail_pos)) & set(flooded_squares))
+                    tail_present = bool(set(neighbours(snake.tail)) & set(flooded_squares))
                     square_count = len(flooded_squares)
                     number_of_squares.append([cell, square_count, tail_present])
                     if square_count <= safe_space_size:
@@ -86,16 +85,17 @@ def move():
 
             # If all are bad don't set the largest as bad
             if set([cell[0] for cell in number_of_squares]).issubset(set(bad_positions)):
-                tail_weighted_squares = list(filter(lambda t: t[1] > 0, number_of_squares))
                 for square in number_of_squares:
-                    # if tail present
+                    # if tail present then scale region size by TAIL_PREFERENCE_FACTOR
                     if square[2]:
-                        # scale region size by TAIL_PREFERENCE_FACTOR
                         square[1] *= TAIL_PREFERENCE_FACTOR
 
-                tail_weighted_squares.sort(key=lambda x: x[1])
-                tail_weighted_squares.reverse()
-                bad_positions.remove(tail_weighted_squares[0][0])
+                sorted(number_of_squares, key=lambda x: x[1], reverse=True)
+
+                # if largest is in our body (they are all 0) don't pick it
+                if number_of_squares[0][0] in snake.body:
+                    number_of_squares.pop(0)
+                bad_positions.remove(number_of_squares[0][0])
 
         # Check if we have the opportunity to attack
         with timing("check_attack", time_remaining):

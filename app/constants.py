@@ -61,7 +61,7 @@ FOOD_STEAL_DIST = FOOD_CLOSE_DIST + 2  # If we are within clost dist to a food a
 
 DISABLE_ATTACKING = False  # Set to True to disable attack logic
 
-SAFE_SPACE_FACTOR = 1.5
+SAFE_SPACE_FACTOR = 2
 TAIL_PREFERENCE_FACTOR = 1.5
 
 # Ratings for how important each thing is
