@@ -73,7 +73,7 @@ def move():
             number_of_squares = []
 
             # Get size of space we can safely move into (should be larger than body size)
-            safe_space_size = snake.attributes.get('length', 10) * SAFE_SPACE_FACTOR
+            safe_space_size = snake.attributes.get('length') * SAFE_SPACE_FACTOR
             for cell in neighbours(snake.head):
                 if board.inside(cell):
                     count = len(flood_fill(board, cell, False))
@@ -138,8 +138,8 @@ def move():
                         thread.start()
                         thread.join()
 
-                    if len(next_move) > 0:  # No good path so we need to do a fallback move
-                        path = max(next_move, key=len)
+                    if len(next_move) > 0:  # if not then no good path so we need to do a fallback move
+                        path = min(next_move, key=len)
                         move = get_direction(snake.head, path[0])
 
     except Exception as e:
