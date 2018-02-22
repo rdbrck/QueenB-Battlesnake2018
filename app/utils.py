@@ -63,12 +63,40 @@ def translate_to_direction(new_pos, old_pos):
     return DIR_NAMES[DIR_VECTORS.index(sub(new_pos, old_pos))]
 
 
-def get_direction(currPos, nextPos):
-    if (currPos[0] == nextPos[0]):
-        if(nextPos[1] - currPos[1] < 0):
+def get_direction(cur_pos, next_pos):
+    if cur_pos[0] == next_pos[0]:
+        if next_pos[1] < cur_pos[1]:
             return 'up'
         return 'down'
-    elif(currPos[1] == nextPos[1]):
-        if(nextPos[0] - currPos[0] < 0):
+    elif cur_pos[1] == next_pos[1]:
+        if next_pos[0] < cur_pos[0]:
             return 'left'
         return 'right'
+
+
+def get_directions(cur_pos, next_pos):
+    if cur_pos[0] > next_pos[0]:
+        if cur_pos[1] > next_pos[1]:
+            return ['left', 'up']
+        elif cur_pos[1] < next_pos[1]:
+            return ['left', 'down']
+        return ['left']
+    elif cur_pos[0] < next_pos[0]:
+        if cur_pos[1] > next_pos[1]:
+            return ['right', 'up']
+        elif cur_pos[1] < next_pos[1]:
+            return ['right', 'down']
+        return ['right']
+    elif cur_pos[1] > next_pos[1]:
+        return ['up']
+    return ['down']
+
+
+def get_next_from_direction(position, direction):
+    if direction == 'right':
+        return (position[0]+1, position[1])
+    elif direction == 'left':
+        return (position[0]-1, position[1])
+    elif direction == 'up':
+        return (position[0], position[1]-1)
+    return (position[0], position[1]+1)

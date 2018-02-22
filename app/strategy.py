@@ -1,6 +1,8 @@
-from .utils import dist, neighbours, sub
-from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, FOOD_MEDIUM_DIST, FOOD_HUNGRY_HEALTH, FOOD_HEALTH_IGNORE, SPOILED, SNAKE,\
-                       FOOD_RATING, ENEMY_RATING, BODY_RATING, EMPTY_RATING, SPOILED_RATING
+from .utils import dist, neighbours, sub, get_directions, get_next_from_direction
+from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, FOOD_MEDIUM_DIST, FOOD_HUNGRY_HEALTH, SPOILED, SNAKE,\
+                       FOOD_RATING, ENEMY_RATING, BODY_RATING, EMPTY_RATING, SPOILED_RATING, FOOD_DANGEROUS, FOOD_STEAL_DIST
+
+import random
 
 
 def _add_count_directions(directions, index, pos, head):
@@ -73,6 +75,16 @@ def general_direction(board, snake, bad_positions):
 
         directions = _add_count_directions(directions, index, fud, snake.head)
 
+    # get rid of directions outside the board
+    if board.outside((snake.head[0] + 1, snake.head[1])):
+        directions.pop('right')
+    elif board.outside((snake.head[0] - 1, snake.head[1])):
+        directions.pop('left')
+    elif board.outside((snake.head[0], snake.head[1] + 1)):
+        directions.pop('down')
+    elif board.outside((snake.head[0], snake.head[1] - 1)):
+        directions.pop('up')
+
     # get rid of directions that are blocked by bad_positions such as tunnels
     temp_directions = directions.copy()
     for pos in bad_positions:
@@ -81,25 +93,25 @@ def general_direction(board, snake, bad_positions):
         elif pos == (snake.head[0] - 1, snake.head[1]):
             temp_directions.pop('left')
         elif pos == (snake.head[0], snake.head[1] + 1):
-            temp_directions.pop('up')
-        elif pos == (snake.head[0], snake.head[1] - 1):
             temp_directions.pop('down')
+        elif pos == (snake.head[0], snake.head[1] - 1):
+            temp_directions.pop('up')
 
     # only use the dictionary with removed positions if there is atleast one left
     if len(temp_directions) > 0:
         directions = temp_directions
 
     # find best general direction
-    best_direction = None
+    best_direction = (random.choice(list(directions.keys())), 0)
     for direction, stats in directions.items():
         if stats['area'] < 1:
             continue
 
         empty_cells = stats['area'] - stats['food'] - stats['spoiled'] - stats['body'] - stats['enemy']
         average_cell_rating = (stats['food'] * FOOD_RATING + stats['spoiled'] * SPOILED_RATING + stats['body'] * BODY_RATING
-                                + stats['enemy'] * ENEMY_RATING + empty_cells * EMPTY_RATING) / stats['area']
+                                + stats['enemy'] * ENEMY_RATING + empty_cells * EMPTY_RATING)
 
-        if (best_direction and average_cell_rating > best_direction[1]) or not best_direction:
+        if (best_direction and average_cell_rating > best_direction[1]):
             best_direction = (direction, average_cell_rating)
         elif best_direction and average_cell_rating == best_direction[1] and directions[best_direction[0]]['area'] < stats['area']:
             best_direction = (direction, average_cell_rating)
@@ -109,32 +121,54 @@ def general_direction(board, snake, bad_positions):
 
 def need_food(board, bad_positions, snake):
     """ Determines if we need food and returns potential food that we can get """
-    food_to_get = []
-
-    if snake.attributes['health'] >= FOOD_HEALTH_IGNORE:
-        return None
+    potential_food = []
 
     # food that is not contested (we are the closest)
     safe_food = [fud for fud in board.food if board.get_cell(fud) != SPOILED]
 
     # always go for safe food even if we kind of need it
     for food in safe_food:
-        # prioritize safe food if it's close and we are a little hungry otherwise wait a little bit
-        if dist(food, snake.head) <= FOOD_CLOSE_DIST and snake.attributes['health'] >= FOOD_CLOSE_HEALTH:
-            food_to_get.append(food)
-        elif dist(food, snake.head) <= FOOD_MEDIUM_DIST and snake.attributes['health'] >= FOOD_MEDIUM_HEALTH:
-            food_to_get.append(food)
-        elif dist(food, snake.head) <= snake.attributes['health'] and snake.attributes['health'] < FOOD_HUNGRY_HEALTH:
-            food_to_get.append(food)
+        if dist(food, snake.head) >= snake.attributes['health']:
+            continue
 
-    # if there is no safe food and we are relatively hungry then move toward contested food
-    if len(food_to_get) == 0 and snake.attributes['health'] < FOOD_HUNGRY_HEALTH:
+        # check if enemy is approaching food we are close to
+        steal = False
+        for enemy in board.snakes:
+            if enemy.attributes['id'] != snake.attributes['id'] and dist(enemy.head, food) <= FOOD_STEAL_DIST:
+                steal = True
+                break
+
+        # prioritize safe food if it's close and we are a little hungry otherwise wait a little bit
+        if dist(food, snake.head) <= FOOD_CLOSE_DIST and (snake.attributes['health'] <= FOOD_CLOSE_HEALTH or steal):
+            potential_food.append(food)
+        elif dist(food, snake.head) <= FOOD_MEDIUM_DIST and snake.attributes['health'] <= FOOD_MEDIUM_HEALTH:
+            potential_food.append(food)
+        elif snake.attributes['health'] < FOOD_HUNGRY_HEALTH:
+            potential_food.append(food)
+
+    # if there is no safe food and we are relatively hungry then go for contested food
+    if len(potential_food) == 0 and snake.attributes['health'] < FOOD_HUNGRY_HEALTH:
         contested_food = [fud for fud in board.food if board.get_cell(fud) == SPOILED]
 
-        # If it's contested but not going to get immediately taken and we are in possible distance of getting it then move one step closer
+        # if we are in possible distance of getting it then add it
         for food in contested_food:
-            if dist(food, snake.head) <= snake.attributes['health'] and food not in bad_positions:
-                food_to_get.append(food)
+            if dist(food, snake.head) <= snake.attributes['health']:
+                potential_food.append(food)
+
+    # remove food that puts us in a bad_position
+    food_to_get = []
+    for fud in potential_food:
+        # if we are really low on health or the food is not super close then add it
+        if snake.attributes['health'] < FOOD_DANGEROUS or dist(snake.head, fud) > FOOD_DANGEROUS:
+            food_to_get.append(fud)
+            continue
+
+        # for each direction that would make sense for the shortest path verify the next move doesn't put us in a bad position
+        for direction in get_directions(snake.head, fud):
+            next_pos = get_next_from_direction(snake.head, direction)
+            if next_pos not in bad_positions and board.inside(next_pos) and board.get_cell(next_pos) != SNAKE:
+                food_to_get.append(fud)
+                break
 
     return (food_to_get if len(food_to_get) > 0 else None)
 

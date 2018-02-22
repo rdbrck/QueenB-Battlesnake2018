@@ -71,13 +71,13 @@ def move():
         # Flood fill in each direction to find bad directions
         with timing("intial flood fill", time_remaining):
             number_of_squares = []
+
             # Get size of space we can safely move into (should be larger than body size)
-            safe_space_size = snake.attributes.get('length', 10) * SAFE_SPACE_FACTOR
-            tail_pos = snake.body[-1]
+            safe_space_size = snake.attributes.get('length') * SAFE_SPACE_FACTOR
             for cell in neighbours(snake.head):
                 if board.inside(cell):
                     flooded_squares = flood_fill(board, cell, False)
-                    tail_present = bool(set(neighbours(tail_pos)) & set(flooded_squares))
+                    tail_present = bool(set(neighbours(snake.tail)) & set(flooded_squares))
                     square_count = len(flooded_squares)
                     number_of_squares.append([cell, square_count, tail_present])
                     if square_count <= safe_space_size:
@@ -85,16 +85,17 @@ def move():
 
             # If all are bad don't set the largest as bad
             if set([cell[0] for cell in number_of_squares]).issubset(set(bad_positions)):
-                tail_weighted_squares = list(filter(lambda t: t[1] > 0, number_of_squares))
                 for square in number_of_squares:
-                    # if tail present
+                    # if tail present then scale region size by TAIL_PREFERENCE_FACTOR
                     if square[2]:
-                        # scale region size by TAIL_PREFERENCE_FACTOR
                         square[1] *= TAIL_PREFERENCE_FACTOR
 
-                tail_weighted_squares.sort(key=lambda x: x[1])
-                tail_weighted_squares.reverse()
-                bad_positions.remove(tail_weighted_squares[0][0])
+                sorted(number_of_squares, key=lambda x: x[1], reverse=True)
+
+                # if largest is in our body (they are all 0) don't pick it
+                if number_of_squares[0][0] in snake.body:
+                    number_of_squares.pop(0)
+                bad_positions.remove(number_of_squares[0][0])
 
         # Check if we have the opportunity to attack
         with timing("check_attack", time_remaining):
@@ -134,21 +135,23 @@ def move():
         # If we don't need food and don't have the opportunity to attack then find a path to a "good" position on the board
         if not move:
             with timing("find_safest_positions", time_remaining):
-                positions = find_safest_positions(snake.head, general_direction(board, snake, bad_positions), board, bad_positions)
-                positions = [position[0] for position in positions]
-                thread_pool = []
+                best_direction = general_direction(board, snake, bad_positions)
+                if best_direction:  # if this doesn't pass we are in a very poor position and need to fallback
+                    positions = find_safest_positions(snake.head, best_direction, board, bad_positions)
+                    positions = [position[0] for position in positions]
+                    thread_pool = []
 
-                for position in positions:
-                    t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
-                    thread_pool.append(t)
+                    for position in positions:
+                        t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
+                        thread_pool.append(t)
 
-                for thread in thread_pool:
-                    thread.start()
-                    thread.join()
+                    for thread in thread_pool:
+                        thread.start()
+                        thread.join()
 
-                if len(next_move) > 0:  # No good path so we need to do a fallback move
-                    path = max(next_move, key=len)
-                    move = get_direction(snake.head, path[0])
+                    if len(next_move) > 0:  # if not then no good path so we need to do a fallback move
+                        path = min(next_move, key=len)
+                        move = get_direction(snake.head, path[0])
 
     except Exception as e:
         logger.error("Code failure - %s \n %s" % (str(e), str(traceback.format_exc())))

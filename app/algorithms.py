@@ -5,7 +5,7 @@ from math import floor
 from copy import deepcopy
 from collections import deque
 
-from .utils import neighbours, surrounding, sub
+from .utils import neighbours, surrounding, sub, dist
 from .entities import Board
 from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED,\
                        FOOD_RATING, SPOILED_RATING, EMPTY_RATING, BODY_RATING, ENEMY_RATING, OUT_SIDE_BOARD_RATING
@@ -18,7 +18,7 @@ def _rate_cell(cell, board, bloom_level=4):
     # Get all the cells of "bloom_level" number of circles surrounding the given cell.
     for x in range(-bloom_level, bloom_level+1):
         for y in range(-bloom_level, bloom_level+1):
-            division_factor = max(abs(x), abs(y))
+            division_factor = dist((cell[0]+x, cell[1]+y), cell)
             if division_factor == 0:
                 division_factor = 1
             cells.append(((cell[0]+x, cell[1]+y), division_factor))
@@ -27,15 +27,15 @@ def _rate_cell(cell, board, bloom_level=4):
     # SNAKE = 1
     # FOOD = 2
     # SPOILED = 3
+    own_snake = board.get_snake(board.own_snake_id)
     cell_weightings = [EMPTY_RATING, ENEMY_RATING, FOOD_RATING, SPOILED_RATING, BODY_RATING, OUT_SIDE_BOARD_RATING]
     cell_values = []
-    own_snake = board.get_snake(board.own_snake_id)
 
     for m_cell in cells:
         weight_key = 5  # Outside the board
         if board.inside(m_cell[0]):
             weight_key = board.get_cell(m_cell[0])
-            if m_cell[0] in own_snake.body:
+            if m_cell[0] in own_snake.coords:
                 weight_key = 4
         cell_values.append((weight_key, m_cell[1]))
 
@@ -79,15 +79,17 @@ def find_safest_positions(current_position, direction, board, bad_positions):
         temp_board.set_cell(pos, SNAKE)
 
     # set up initial bounds
-    bound_x = current_position[0]+1 if current_position[0] != (board.width-1) else current_position[0]
-    bound_y = current_position[1]+1 if current_position[1] != (board.height-1) else current_position[1]
     if direction == "up":
+        bound_y = current_position[1]-1 if current_position[1] != 0 else current_position[1]
         bounds = [(0, 0), ((board.width-1), bound_y)]
     elif direction == "down":
+        bound_y = current_position[1]+1 if current_position[1] != (board.height-1) else current_position[1]
         bounds = [(0, bound_y), ((board.width-1), (board.height-1))]
     elif direction == "right":
+        bound_x = current_position[0]+1 if current_position[0] != (board.width-1) else current_position[0]
         bounds = [(bound_x, 0), ((board.width-1), (board.height-1))]
     else:  # left
+        bound_x = current_position[0]-1 if current_position[0] != 0 else current_position[0]
         bounds = [(0, 0), (bound_x, (board.height-1))]
 
     # Create a checkerboard of positions to check
@@ -95,15 +97,15 @@ def find_safest_positions(current_position, direction, board, bad_positions):
     potential_cells = []
     checkerboard_count = 0
     for x in range(bounds[0][0], bounds[1][0]+1):
-        if checkerboard_count != 0:
-            checkerboard_count += 1
         for y in range(bounds[0][1], bounds[1][1]+1):
             checkerboard_count += 1
             if (checkerboard_count % skip_cell_modulous) == 0:
                 continue
             potential_cells.append(((x, y), _rate_cell((x, y), temp_board)))
+        checkerboard_count += 1
+
     results = sorted(potential_cells, key=lambda x: x[1], reverse=True)
-    return results[:5]
+    return results[:3]
 
 
 def find_food(current_position, health_remaining, board, board_food):
