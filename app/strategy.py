@@ -1,6 +1,6 @@
 from .utils import dist, neighbours, sub, get_directions, get_next_from_direction
 from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, FOOD_MEDIUM_DIST, FOOD_HUNGRY_HEALTH, SPOILED, SNAKE,\
-                       FOOD_RATING, ENEMY_RATING, BODY_RATING, EMPTY_RATING, SPOILED_RATING, FOOD_DANGEROUS, FOOD_STEAL_DIST
+                       FOOD_RATING, ENEMY_RATING, BODY_RATING, EMPTY_RATING, SPOILED_RATING, FOOD_DANGEROUS_HEALTH, FOOD_DANGEROUS_DIST, FOOD_STEAL_DIST
 
 import random
 
@@ -18,6 +18,7 @@ def _add_count_directions(directions, index, pos, head):
     return directions
 
 
+# TODO: This isn't being used and might be able to be removed
 def general_direction(board, snake, bad_positions):
     """ Returns the most 'beneficial' general direction to move in terms of board position """
     directions = {
@@ -147,7 +148,7 @@ def need_food(board, bad_positions, snake):
             potential_food.append(food)
 
     # if there is no safe food and we are relatively hungry then go for contested food
-    if len(potential_food) == 0 and snake.attributes['health'] < FOOD_HUNGRY_HEALTH:
+    if len(potential_food) < 1 and snake.attributes['health'] < FOOD_HUNGRY_HEALTH:
         contested_food = [fud for fud in board.food if board.get_cell(fud) == SPOILED]
 
         # if we are in possible distance of getting it then add it
@@ -159,7 +160,7 @@ def need_food(board, bad_positions, snake):
     food_to_get = []
     for fud in potential_food:
         # if we are really low on health or the food is not super close then add it
-        if snake.attributes['health'] < FOOD_DANGEROUS or dist(snake.head, fud) > FOOD_DANGEROUS:
+        if snake.attributes['health'] < FOOD_DANGEROUS_HEALTH or dist(snake.head, fud) > FOOD_DANGEROUS_DIST:
             food_to_get.append(fud)
             continue
 

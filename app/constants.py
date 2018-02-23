@@ -51,13 +51,15 @@ SNAKE = 1
 FOOD = 2
 SPOILED = 3
 
-FOOD_CLOSE_HEALTH = 90  # Between this and ignore health just go for close food
+FOOD_CLOSE_HEALTH = 80  # Between this and ignore health just go for close food
 FOOD_CLOSE_DIST = 3  # The distance food is away to be considered close
-FOOD_MEDIUM_HEALTH = 60  # Between this and close distance is medium distance 
+FOOD_MEDIUM_HEALTH = 65  # Between this and close distance is medium distance 
 FOOD_MEDIUM_DIST = 6  # How many moves away is a medium distance food
-FOOD_HUNGRY_HEALTH = 40  # When we should start going directly to safe food and contested food if there isn't safe food
-FOOD_DANGEROUS = 10  # If below value in health go for potentially dangerous food or if distance to food is greater than value
-FOOD_STEAL_DIST = FOOD_CLOSE_DIST + 2  # If we are within clost dist to a food and an enemy is within 5 then steal it no matter our health
+FOOD_HUNGRY_HEALTH = 50  # When we should start going directly to safe food and contested food if there isn't safe food
+FOOD_DANGEROUS_HEALTH = 10  # If below value in health go for potentially dangerous food
+FOOD_DANGEROUS_DIST = 6  # Go for potentially dangerous food if distance to food is greater than value
+FOOD_STEAL_DIST = FOOD_CLOSE_DIST + 3  # If we are within clost dist to a food and an enemy is within 5 then steal it no matter our health
+FOOD_BOXED_IN_HEALTH = 25  # if we are boxed in and below this value in health then prioritize food
 
 DISABLE_ATTACKING = False  # Set to True to disable attack logic
 
@@ -68,7 +70,7 @@ TAIL_PREFERENCE_FACTOR = 1.5
 FOOD_RATING = 6
 SPOILED_RATING = 4
 BODY_RATING = 0.5
-EMPTY_RATING = 0.5
+EMPTY_RATING = 0.25
 ENEMY_RATING = -2
 OUT_SIDE_BOARD_RATING = -2
 

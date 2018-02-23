@@ -7,7 +7,7 @@ from collections import deque
 
 from .utils import neighbours, surrounding, sub, dist
 from .entities import Board
-from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED,\
+from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED, SAFE_SPACE_FACTOR,\
                        FOOD_RATING, SPOILED_RATING, EMPTY_RATING, BODY_RATING, ENEMY_RATING, OUT_SIDE_BOARD_RATING
 
 
@@ -68,7 +68,7 @@ def flood_fill(board, start_pos, allow_start_in_occupied_cell=False):
     return visited
 
 
-def find_safest_positions(current_position, direction, board, bad_positions):
+def find_safest_positions(snake, board, bad_positions):
     """
     finds a position in a binary-search like fashion, this could probably just
     linearly scan the whole board, rating every position, and then returning the highest n
@@ -78,43 +78,32 @@ def find_safest_positions(current_position, direction, board, bad_positions):
     for pos in bad_positions:
         temp_board.set_cell(pos, SNAKE)
 
-    # set up initial bounds
-    if direction == "up":
-        bound_y = current_position[1]-1 if current_position[1] != 0 else current_position[1]
-        bounds = [(0, 0), ((board.width-1), bound_y)]
-    elif direction == "down":
-        bound_y = current_position[1]+1 if current_position[1] != (board.height-1) else current_position[1]
-        bounds = [(0, bound_y), ((board.width-1), (board.height-1))]
-    elif direction == "right":
-        bound_x = current_position[0]+1 if current_position[0] != (board.width-1) else current_position[0]
-        bounds = [(bound_x, 0), ((board.width-1), (board.height-1))]
-    else:  # left
-        bound_x = current_position[0]-1 if current_position[0] != 0 else current_position[0]
-        bounds = [(0, 0), (bound_x, (board.height-1))]
+    # Setup bounds
+    bounds = [(0, 0), (board.width-1, board.height-1)]
 
     # Create a checkerboard of positions to check
-    skip_cell_modulous = 2
     potential_cells = []
-    checkerboard_count = 0
     for x in range(bounds[0][0], bounds[1][0]+1):
         for y in range(bounds[0][1], bounds[1][1]+1):
-            checkerboard_count += 1
-            if (checkerboard_count % skip_cell_modulous) == 0:
+            if board.get_cell((x, y)) in [SNAKE, FOOD, SPOILED]:
+                continue
+            if (x, y) in bad_positions:
+                continue
+            if len(flood_fill(temp_board, (x, y))) <= snake.attributes['length'] * SAFE_SPACE_FACTOR:
                 continue
             potential_cells.append(((x, y), _rate_cell((x, y), temp_board)))
-        checkerboard_count += 1
 
     results = sorted(potential_cells, key=lambda x: x[1], reverse=True)
-    return results[:3]
+    return results[:5]
 
 
-def find_food(current_position, health_remaining, board, board_food):
+def rate_food(current_position, board, board_food):
     """ finds and rates food positions """
     rated_food = [(food, _rate_cell(food, board)) for food in board_food]
     return sorted(rated_food, key=lambda x: x[1], reverse=True)
 
 
-def bfs(starting_position, target_position, board, exclude, return_list):
+def bfs(starting_position, target_position, board, exclude, return_list, include_start=False):
     """
     BFS implementation to search for path to food
 
@@ -126,11 +115,13 @@ def bfs(starting_position, target_position, board, exclude, return_list):
 
     bfs((0,0), (2,2), board) -> [(0,0), (0,1), (0,2), (1,2), (2,2)]
     """
-    def _get_path_from_nodes(node):
+    def _get_path_from_nodes(node, include_start):
         path = []
         while(node):
             path.insert(0, (node[0], node[1]))  # Reverse
             node = node[2]
+        if include_start:
+            return return_list.append(path)
         return return_list.append(path[1:])
 
     x = starting_position[0]
@@ -149,7 +140,7 @@ def bfs(starting_position, target_position, board, exclude, return_list):
         y = node[1]
 
         if (x, y) == target_position:  # If we reach target_position
-            return _get_path_from_nodes(node)  # Rebuild path
+            return _get_path_from_nodes(node, include_start)  # Rebuild path
 
         if (board_copy.get_cell((x, y)) == SPOILED or board_copy.get_cell((x, y)) == SNAKE) and not (x, y) == starting_position:
             continue

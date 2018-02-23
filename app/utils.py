@@ -58,6 +58,15 @@ def neighbours(pos):
     ]
 
 
+def touching(pos1, pos2):
+    """ tells you if two positions are touching """
+    if pos1[0] == pos2[0] and abs(pos1[1] - pos2[1]) == 1:
+        return True
+    if pos1[1] == pos2[1] and abs(pos1[0] - pos2[0]) == 1:
+        return True
+    return False
+
+
 def translate_to_direction(new_pos, old_pos):
     """ Translates the change between two positions into a direction name. """
     return DIR_NAMES[DIR_VECTORS.index(sub(new_pos, old_pos))]
