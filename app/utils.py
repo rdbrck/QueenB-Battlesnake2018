@@ -58,6 +58,15 @@ def neighbours(pos):
     ]
 
 
+def touching(pos1, pos2):
+    """ tells you if two positions are touching """
+    if pos1[0] == pos2[0] and abs(pos1[1] - pos2[1]) == 1:
+        return True
+    if pos1[1] == pos2[1] and abs(pos1[0] - pos2[0]) == 1:
+        return True
+    return False
+
+
 def translate_to_direction(new_pos, old_pos):
     """ Translates the change between two positions into a direction name. """
     return DIR_NAMES[DIR_VECTORS.index(sub(new_pos, old_pos))]
@@ -100,3 +109,10 @@ def get_next_from_direction(position, direction):
     elif direction == 'up':
         return (position[0], position[1]-1)
     return (position[0], position[1]+1)
+
+
+def food_in_box(flood_squares, board):
+    for fud in board.food:
+        if fud in flood_squares:
+            return True
+    return False

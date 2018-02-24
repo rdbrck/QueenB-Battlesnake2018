@@ -1,8 +1,8 @@
 from .entities import Board
-from .strategy import need_food, check_attack, general_direction
-from .utils import timing, get_direction, add, neighbours, dist
-from .algorithms import bfs, find_safest_positions, find_food, flood_fill
-from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS,\
+from .strategy import need_food, check_attack
+from .utils import timing, get_direction, add, neighbours, dist, touching
+from .algorithms import bfs, find_safest_positions, rate_food, flood_fill
+from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS, FOOD_BOXED_IN_HEALTH,\
                        SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR, TAIL_PREFERENCE_FACTOR, LOG_LEVEL
 
 from functools import reduce
@@ -69,8 +69,9 @@ def move():
                     potential_snake_positions.extend([position for position in enemy_snake.potential_positions() if board.inside(position)])
 
         # Flood fill in each direction to find bad directions
-        with timing("intial flood fill", time_remaining):
+        with timing("intial flood fill detection", time_remaining):
             number_of_squares = []
+            boxed_in = False
 
             # Get size of space we can safely move into (should be larger than body size)
             safe_space_size = snake.attributes.get('length') * SAFE_SPACE_FACTOR
@@ -90,19 +91,29 @@ def move():
                     if square[2]:
                         square[1] *= TAIL_PREFERENCE_FACTOR
 
-                sorted(number_of_squares, key=lambda x: x[1], reverse=True)
+                number_of_squares = sorted(number_of_squares, key=lambda x: x[1], reverse=True)
 
-                # if largest is in our body (they are all 0) don't pick it
-                if number_of_squares[0][0] in snake.body:
-                    number_of_squares.pop(0)
-                bad_positions.remove(number_of_squares[0][0])
+                # go through each option and remove the largest from bad positions
+                for x in range(0, len(number_of_squares)):
+                    # remove from bad_positions if it's the largest or has the same length as the largest
+                    if number_of_squares[0][1] == number_of_squares[x][1] and number_of_squares[x][0] not in snake.body:
+                        bad_positions.remove(number_of_squares[x][0])
+
+                # if there is atleast two none zero floodfills then check for box in
+                if len([v for v in number_of_squares if v[1] > 0]) > 1:
+                    boxed_in = True
+                    # if all of the non zeros are the same and the rest are zero then we are boxed in
+                    for value in [pos[1] for pos in number_of_squares]:
+                        if value not in [number_of_squares[0][1], 0]:
+                            boxed_in = False
 
         # Check if we have the opportunity to attack
         with timing("check_attack", time_remaining):
-            attack = check_attack(board, potential_snake_positions, bad_positions, snake)
+            attack = check_attack(board, bad_positions, snake)
 
         # combine and get rid of duplicates
         bad_positions = list(set(potential_snake_positions + bad_positions))
+
         # Check if we need food (or if there is any that we can reach)
         with timing("need_food", time_remaining):
             food = need_food(board, bad_positions, snake)
@@ -111,11 +122,76 @@ def move():
         if attack and not DISABLE_ATTACKING and (snake.attributes['health'] > FOOD_HUNGRY_HEALTH or not food):
             move = get_direction(snake.head, attack)
 
-        # If we need food find a good path to said food (prioritize over attacking when hungry)
-        elif food:
+        # if we are boxed in, not attacking, and are in good health then we need to find an exit and max our movement
+        if boxed_in and not move and (snake.attributes['health'] > FOOD_BOXED_IN_HEALTH or not food_in_box(flood_fill(board, snake.head, True), board)):
+            with timing("boxed_in", time_remaining):
+                # get the flooded squares
+                flooded_squares = flood_fill(board, snake.head, True)
+                exit = snake.tail
+
+                # loop through snake starting from tail and check if adjacent to flood
+                for piece in list(reversed(snake.body)):
+                    for pos in flooded_squares:
+                        if touching(pos, piece):
+                            exit = pos
+                            break
+                    if exit != snake.tail:
+                        break
+                
+                directions = []
+                for position in [v[0] for v in number_of_squares if v[1] > 0]:
+                    directions.append((position, get_direction(snake.head, position)))
+                    t = Thread(target=bfs(position, exit, board, bad_positions, next_move, include_start=True))
+                    thread_pool.append(t)
+
+                for thread in thread_pool:
+                    thread.start()
+                    thread.join()
+
+                next_move = [path for path in next_move if not len(path) == 0]
+
+                if len(next_move) > 0:
+                    path = max([move for move in next_move], key=len)
+                    move = get_direction(snake.head, path[0])
+
+        # If we need food find a good path to said food (prioritized over attacking/boxed in when hungry)
+        if food and not move:
             with timing("find_food", time_remaining):
-                food_positions = find_food(snake.head, snake.attributes['health'], board, food)
-                positions = [position[0] for position in food_positions]
+                food_positions_ratings = rate_food(snake.head, board, food)
+                thread_pool = []
+
+                for position in [position[0] for position in food_positions_ratings]:
+                    t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
+                    thread_pool.append(t)
+
+                for thread in thread_pool:
+                    thread.start()
+                    thread.join()
+
+                next_move = [path for path in next_move if not len(path) == 0]
+
+                if len(next_move) > 0:
+                    food_moves = []
+
+                    # verify if atleast one path returned had a positive rating
+                    for move in next_move:
+                        for pos in food_positions_ratings:
+                            if pos[0] == move[-1]:
+                                food_moves.append((move, pos[1]))
+
+                    # if we have more than one option then figure out if we want to get rid of any poor ratings
+                    if len(food_moves) > 1:
+                        pos_moves = [move for move in food_moves if move[1] > 0]
+                        food_moves = pos_moves if pos_moves else food_moves
+
+                    path = min([move[0] for move in food_moves], key=len)
+                    move = get_direction(snake.head, path[0])
+
+        # If we don't need food, don't have the opportunity to attack, and are not boxed in then find a path to a "good" position on the board
+        if not move:
+            with timing("find_safest_positions", time_remaining):
+                positions = find_safest_positions(snake, board, bad_positions)
+                positions = [position[0] for position in positions]
                 thread_pool = []
 
                 for position in positions:
@@ -126,52 +202,29 @@ def move():
                     thread.start()
                     thread.join()
 
-                next_move = [path for path in next_move if not len(path) == 0]
-
-                if len(next_move) > 0:  # No good path so we need to do a fallback move
+                if len(next_move) > 0:  # if not then no good path so we need to do a fallback move
                     path = min(next_move, key=len)
                     move = get_direction(snake.head, path[0])
-
-        # If we don't need food and don't have the opportunity to attack then find a path to a "good" position on the board
-        if not move:
-            with timing("find_safest_positions", time_remaining):
-                best_direction = general_direction(board, snake, bad_positions)
-                if best_direction:  # if this doesn't pass we are in a very poor position and need to fallback
-                    positions = find_safest_positions(snake.head, best_direction, board, bad_positions)
-                    positions = [position[0] for position in positions]
-                    thread_pool = []
-
-                    for position in positions:
-                        t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
-                        thread_pool.append(t)
-
-                    for thread in thread_pool:
-                        thread.start()
-                        thread.join()
-
-                    if len(next_move) > 0:  # if not then no good path so we need to do a fallback move
-                        path = min(next_move, key=len)
-                        move = get_direction(snake.head, path[0])
 
     except Exception as e:
         logger.error("Code failure - %s \n %s" % (str(e), str(traceback.format_exc())))
 
     try:
-        # setup the board for fallback and verification
-        with timing("setup fallback and verification board", time_remaining):
-            for enemy in board.snakes:
-                if enemy.attributes['id'] != snake.attributes['id'] and (len(board.food) == 0 or enemy.closest_food(board.food)[1] < dist(enemy.tail, snake.head)):
-                    board.set_cell(enemy.tail, 0)
-
         # If code above failed then fallback to a floodfill style move
         if not move:
             logger.info("CHANGED MOVE - floodfill fallback.")
+            # setup the board for fallback and verification
+            with timing("setup fallback and verification board", time_remaining):
+                for enemy in board.snakes:
+                    if enemy.attributes['id'] != snake.attributes['id'] and (len(board.food) == 0 or enemy.closest_food(board.food)[1] != dist(enemy.tail, snake.head)):
+                            board.set_cell(enemy.tail, 0)
+
             with timing("floodfill fallback", time_remaining):
                 temp_board = Board(clone=board)
                 for pos in potential_snake_positions:
                     temp_board.set_cell(pos, 1)
 
-                # try flood fill with bad positionns and no worry tails included
+                # try flood fill with bad positions and no worry tails included
                 floods = {
                     "up": len(flood_fill(temp_board, (snake.head[0], snake.head[1]-1))),
                     "down": len(flood_fill(temp_board, (snake.head[0], snake.head[1]+1))),
@@ -205,5 +258,6 @@ def move():
                     break
 
     return {
-        'move': move  # 'up' | 'down' | 'left' | 'right'
+        'move': move,  # 'up' | 'down' | 'left' | 'right'
+        'taunt': SNAKE_TAUNT
     }
