@@ -18,108 +18,6 @@ def _add_count_directions(directions, index, pos, head):
     return directions
 
 
-# TODO: This isn't being used and might be able to be removed
-def general_direction(board, snake, bad_positions):
-    """ Returns the most 'beneficial' general direction to move in terms of board position """
-    directions = {
-        "up": {
-            'food': 0,
-            'enemy': 0,
-            'body': 0,
-            'spoiled': 0,
-            'area': board.width * (snake.head[1] - 1)
-        },
-        "down": {
-            'food': 0,
-            'enemy': 0,
-            'body': 0,
-            'spoiled': 0,
-            'area': board.width * (board.height - (snake.head[1] + 1))
-        },
-        "left": {
-            'food': 0,
-            'enemy': 0,
-            'body': 0,
-            'spoiled': 0,
-            'area': board.height * (snake.head[0] - 1)
-        },
-        "right": {
-            'food': 0,
-            'enemy': 0,
-            'body': 0,
-            'spoiled': 0,
-            'area': board.height * (board.width - (snake.head[0] + 1))
-        }     
-    }
-
-    # set bad positions as bad
-    for pos in bad_positions:
-        if pos in snake.body:
-            continue
-
-        directions = _add_count_directions(directions, 'enemy', pos, snake.head)
-
-    # set snakes as bad and self as okay
-    for enemy in board.snakes:
-        index = 'body'
-        if enemy.attributes['id'] != snake.attributes['id']:
-            index = 'enemy'
-
-        for pos in enemy.coords:
-            directions = _add_count_directions(directions, index, pos, snake.head)
-
-    # set food as good
-    for fud in board.food:
-        index = 'food'
-        if board.get_cell(fud) == SPOILED:
-            index = 'spoiled'
-
-        directions = _add_count_directions(directions, index, fud, snake.head)
-
-    # get rid of directions outside the board
-    if board.outside((snake.head[0] + 1, snake.head[1])):
-        directions.pop('right')
-    elif board.outside((snake.head[0] - 1, snake.head[1])):
-        directions.pop('left')
-    elif board.outside((snake.head[0], snake.head[1] + 1)):
-        directions.pop('down')
-    elif board.outside((snake.head[0], snake.head[1] - 1)):
-        directions.pop('up')
-
-    # get rid of directions that are blocked by bad_positions such as tunnels
-    temp_directions = directions.copy()
-    for pos in bad_positions:
-        if pos == (snake.head[0] + 1, snake.head[1]):
-            temp_directions.pop('right')
-        elif pos == (snake.head[0] - 1, snake.head[1]):
-            temp_directions.pop('left')
-        elif pos == (snake.head[0], snake.head[1] + 1):
-            temp_directions.pop('down')
-        elif pos == (snake.head[0], snake.head[1] - 1):
-            temp_directions.pop('up')
-
-    # only use the dictionary with removed positions if there is atleast one left
-    if len(temp_directions) > 0:
-        directions = temp_directions
-
-    # find best general direction
-    best_direction = (random.choice(list(directions.keys())), 0)
-    for direction, stats in directions.items():
-        if stats['area'] < 1:
-            continue
-
-        empty_cells = stats['area'] - stats['food'] - stats['spoiled'] - stats['body'] - stats['enemy']
-        average_cell_rating = (stats['food'] * FOOD_RATING + stats['spoiled'] * SPOILED_RATING + stats['body'] * BODY_RATING
-                                + stats['enemy'] * ENEMY_RATING + empty_cells * EMPTY_RATING)
-
-        if (best_direction and average_cell_rating > best_direction[1]):
-            best_direction = (direction, average_cell_rating)
-        elif best_direction and average_cell_rating == best_direction[1] and directions[best_direction[0]]['area'] < stats['area']:
-            best_direction = (direction, average_cell_rating)
-
-    return best_direction[0]
-
-
 def need_food(board, bad_positions, snake):
     """ Determines if we need food and returns potential food that we can get """
     potential_food = []
@@ -174,28 +72,33 @@ def need_food(board, bad_positions, snake):
     return (food_to_get if len(food_to_get) > 0 else None)
 
 
-def _touching_body(enemy, snake):
-    """ tests if the enemy snake is touching our body """
-    for pos in neighbours(enemy.head):
-        if pos in snake.body:
+def _touching_body(snake_a, snake_b):
+    """ tests if snake_a is touching body of snake_b """
+    for pos in neighbours(snake_a.head):
+        if pos in snake_b.body:
             return True
     return False
 
 
-def _same_direction(enemy, snake):
-    """ returns true when a two snakes last move were the same (pointing in same direction) """
-    return sub(enemy.coords[0], enemy.coords[1]) == sub(snake.coords[0], snake.coords[1])
+def _same_direction(snake_a, snake_b):
+    """ returns true when two snakes last move were the same (pointing in same direction) """
+    return sub(snake_a.coords[0], snake_a.coords[1]) == sub(snake_b.coords[0], snake_b.coords[1])
 
 
-def check_attack(board, potential_snake_positions, bad_positions, snake):
+def check_attack(board, bad_positions, snake):
     """ Determines if we have the opportunity to attack - doesn't seek out attacking but will attack given the opportunity """
     possible_attacks = []
     enemy_snakes = [enemy for enemy in board.snakes if enemy.attributes['id'] != snake.attributes['id']]
 
-    # add potential attack positions where a snake with less health might move into
-    for pos in neighbours(snake.head):
-        if pos in potential_snake_positions:
-            possible_attacks.append(pos)
+    # attack potential position that enemy would move into unless we are tailing their head
+    for enemy in enemy_snakes:
+        possible_attacks.extend([
+            position for position in enemy.potential_positions() if board.inside(position)
+            and not (_touching_body(snake, enemy) and _same_direction(snake, enemy)) and position in neighbours(snake.head)
+        ])
+
+    # remove dups from extending logic
+    possible_attacks = list(set(possible_attacks))
 
     # add potential attack positions where enemy snake is between us and a wall or another snake
     for enemy in enemy_snakes:
@@ -234,7 +137,7 @@ def check_attack(board, potential_snake_positions, bad_positions, snake):
             if neighbour in possible_attacks and enemy.attributes['length'] >= snake.attributes['length']:
                 possible_attacks.remove(neighbour)
 
-    # remove possible attack moves if they have been deamed 'bad' as aprt of previous logic
+    # remove possible attack moves if they have been deamed 'bad' as part of previous logic
     for pos in bad_positions:
         if pos in possible_attacks:
             possible_attacks.remove(pos)

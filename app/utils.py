@@ -109,3 +109,10 @@ def get_next_from_direction(position, direction):
     elif direction == 'up':
         return (position[0], position[1]-1)
     return (position[0], position[1]+1)
+
+
+def food_in_box(flood_squares, board):
+    for fud in board.food:
+        if fud in flood_squares:
+            return True
+    return False

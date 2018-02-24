@@ -5,9 +5,9 @@ from math import floor
 from copy import deepcopy
 from collections import deque
 
-from .utils import neighbours, surrounding, sub, dist
+from .utils import neighbours, surrounding, sub, dist, touching
 from .entities import Board
-from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED, SAFE_SPACE_FACTOR,\
+from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED, SAFE_SPACE_FACTOR, ENABLE_CHECKERBOARD_SIZE,\
                        FOOD_RATING, SPOILED_RATING, EMPTY_RATING, BODY_RATING, ENEMY_RATING, OUT_SIDE_BOARD_RATING
 
 
@@ -68,18 +68,28 @@ def flood_fill(board, start_pos, allow_start_in_occupied_cell=False):
     return visited
 
 
+def _touching_flood(flood, pos):
+    for point in flood:
+        if touching(pos, point):
+            return True
+    return False
+
+
 def find_safest_positions(snake, board, bad_positions):
     """
     finds a position in a binary-search like fashion, this could probably just
     linearly scan the whole board, rating every position, and then returning the highest n
     positions
     """
+    # account for bad_positions
     temp_board = Board(clone=board)
     for pos in bad_positions:
         temp_board.set_cell(pos, SNAKE)
 
-    # Setup bounds
+    # Setup bounds and modulous
     bounds = [(0, 0), (board.width-1, board.height-1)]
+    skip_cell_modulous = 1 if (board.width*board.height) <= ENABLE_CHECKERBOARD_SIZE else 2
+    checkerboard_count = 0
 
     # Create a checkerboard of positions to check
     potential_cells = []
@@ -89,9 +99,16 @@ def find_safest_positions(snake, board, bad_positions):
                 continue
             if (x, y) in bad_positions:
                 continue
-            if len(flood_fill(temp_board, (x, y))) <= snake.attributes['length'] * SAFE_SPACE_FACTOR:
+
+            flood = flood_fill(temp_board, (x, y))
+            if len(flood) <= snake.attributes['length'] * SAFE_SPACE_FACTOR and not _touching_flood(flood, snake.head):
+                continue
+
+            checkerboard_count += 1
+            if (checkerboard_count % skip_cell_modulous) != 0:
                 continue
             potential_cells.append(((x, y), _rate_cell((x, y), temp_board)))
+        checkerboard_count += 1
 
     results = sorted(potential_cells, key=lambda x: x[1], reverse=True)
     return results[:5]

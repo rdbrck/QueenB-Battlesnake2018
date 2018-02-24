@@ -109,7 +109,7 @@ def move():
 
         # Check if we have the opportunity to attack
         with timing("check_attack", time_remaining):
-            attack = check_attack(board, potential_snake_positions, bad_positions, snake)
+            attack = check_attack(board, bad_positions, snake)
 
         # combine and get rid of duplicates
         bad_positions = list(set(potential_snake_positions + bad_positions))
@@ -123,7 +123,7 @@ def move():
             move = get_direction(snake.head, attack)
 
         # if we are boxed in, not attacking, and are in good health then we need to find an exit and max our movement
-        if boxed_in and not move and snake.attributes['health'] > FOOD_BOXED_IN_HEALTH:
+        if boxed_in and not move and (snake.attributes['health'] > FOOD_BOXED_IN_HEALTH or not food_in_box(flood_fill(board, snake.head, True), board)):
             with timing("boxed_in", time_remaining):
                 # get the flooded squares
                 flooded_squares = flood_fill(board, snake.head, True)
@@ -210,47 +210,13 @@ def move():
         logger.error("Code failure - %s \n %s" % (str(e), str(traceback.format_exc())))
 
     try:
-        # try boxed in as fallback if we didn't run it already
-        if not boxed_in and not move:
-            logger.info("CHANGED MOVE - boxed in fallback.")
-            with timing("setup fallback and verification board", time_remaining):
-                # get the flooded squares
-                flooded_squares = flood_fill(board, snake.head, True)
-                exit = snake.tail
-
-                # loop through snake starting from tail and check if adjacent to flood
-                for piece in list(reversed(snake.body)):
-                    for pos in flooded_squares:
-                        if touching(pos, piece):
-                            exit = pos
-                            break
-                    if exit != snake.tail:
-                        break
-                
-                directions = []
-                thread_pool = []
-                for position in [v[0] for v in number_of_squares if v[1] > 0]:
-                    directions.append((position, get_direction(snake.head, position)))
-                    t = Thread(target=bfs(position, exit, board, bad_positions, next_move, include_start=True))
-                    thread_pool.append(t)
-
-                for thread in thread_pool:
-                    thread.start()
-                    thread.join()
-
-                next_move = [path for path in next_move if not len(path) == 0]
-
-                if len(next_move) > 0:
-                    path = max([move for move in next_move], key=len)
-                    move = get_direction(snake.head, path[0])
-
         # If code above failed then fallback to a floodfill style move
         if not move:
             logger.info("CHANGED MOVE - floodfill fallback.")
             # setup the board for fallback and verification
             with timing("setup fallback and verification board", time_remaining):
                 for enemy in board.snakes:
-                    if enemy.attributes['id'] != snake.attributes['id'] and (len(board.food) == 0 or enemy.closest_food(board.food)[1] < dist(enemy.tail, snake.head)):
+                    if enemy.attributes['id'] != snake.attributes['id'] and (len(board.food) == 0 or enemy.closest_food(board.food)[1] != dist(enemy.tail, snake.head)):
                             board.set_cell(enemy.tail, 0)
 
             with timing("floodfill fallback", time_remaining):
@@ -292,5 +258,6 @@ def move():
                     break
 
     return {
-        'move': move  # 'up' | 'down' | 'left' | 'right'
+        'move': move,  # 'up' | 'down' | 'left' | 'right'
+        'taunt': SNAKE_TAUNT
     }
