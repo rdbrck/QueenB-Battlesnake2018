@@ -1,6 +1,7 @@
-from .utils import dist, neighbours, sub, get_directions, get_next_from_direction
+from .utils import dist, neighbours, sub, get_directions, get_next_from_direction, next_to_wall
 from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, FOOD_MEDIUM_DIST, FOOD_HUNGRY_HEALTH, SPOILED, SNAKE,\
-                       FOOD_RATING, ENEMY_RATING, BODY_RATING, EMPTY_RATING, SPOILED_RATING, FOOD_DANGEROUS_HEALTH, FOOD_DANGEROUS_DIST, FOOD_STEAL_DIST
+                       FOOD_RATING, ENEMY_RATING, BODY_RATING, EMPTY_RATING, SPOILED_RATING, FOOD_DANGEROUS_HEALTH, FOOD_DANGEROUS_DIST, FOOD_STEAL_DIST, \
+                       FOOD_HUNGRY_WALL_HEALTH
 
 import random
 
@@ -59,15 +60,17 @@ def need_food(board, bad_positions, snake):
     for fud in potential_food:
         # if we are really low on health or the food is not super close then add it
         if snake.attributes['health'] < FOOD_DANGEROUS_HEALTH or dist(snake.head, fud) > FOOD_DANGEROUS_DIST:
-            food_to_get.append(fud)
-            continue
+            if not next_to_wall(food, board) or snake.attributes['health'] < FOOD_HUNGRY_WALL_HEALTH:
+                food_to_get.append(fud)
+                continue
 
         # for each direction that would make sense for the shortest path verify the next move doesn't put us in a bad position
         for direction in get_directions(snake.head, fud):
             next_pos = get_next_from_direction(snake.head, direction)
             if next_pos not in bad_positions and board.inside(next_pos) and board.get_cell(next_pos) != SNAKE:
-                food_to_get.append(fud)
-                break
+                if not next_to_wall(food, board) or snake.attributes['health'] < FOOD_HUNGRY_WALL_HEALTH:
+                    food_to_get.append(fud)
+                    break
 
     return (food_to_get if len(food_to_get) > 0 else None)
 

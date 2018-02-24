@@ -111,6 +111,7 @@ def find_safest_positions(snake, board, bad_positions):
         checkerboard_count += 1
 
     results = sorted(potential_cells, key=lambda x: x[1], reverse=True)
+
     return results[:5]
 
 
