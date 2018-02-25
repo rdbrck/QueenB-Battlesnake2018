@@ -58,10 +58,11 @@ FOOD_MEDIUM_DIST = 6  # How many moves away is a medium distance food
 FOOD_HUNGRY_HEALTH = 50  # When we should start going directly to safe food and contested food if there isn't safe food
 FOOD_DANGEROUS_HEALTH = 10  # If below value in health go for potentially dangerous food
 FOOD_DANGEROUS_DIST = 6  # Go for potentially dangerous food if distance to food is greater than value
-FOOD_STEAL_DIST = FOOD_CLOSE_DIST + 3  # If we are within clost dist to a food and an enemy is within 5 then steal it no matter our health
+FOOD_STEAL_DIST = 3  # If we are within close/medium dist to a food and an enemy is within close/medium+value then steal it no matter our health
 FOOD_BOXED_IN_HEALTH = 25  # if we are boxed in and below this value in health then prioritize food
 
 DISABLE_ATTACKING = False  # Set to True to disable attack logic
+DISABLE_STEALING = True  # Set to True to disable food stealing
 
 SAFE_SPACE_FACTOR = 2
 TAIL_PREFERENCE_FACTOR = 1.5

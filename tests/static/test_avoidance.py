@@ -44,8 +44,7 @@ class TestAvoidanceLogic(unittest.TestCase):
         """ know that you need to path around enemy tail growth """
         data = TestGameData()
         data.set_self([(5, 6), (5, 7), (5, 8)], health=10)
-        data.add_enemy([(7, 5), (6, 5), (5, 5)])
-        data.set_food([(5, 4), (8, 5)])
+        data.add_enemy([(7, 5), (6, 5), (5, 5), (5, 5)])
 
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertNotEqual(response.json()['move'], 'up')
@@ -92,7 +91,7 @@ class TestAvoidanceLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'left')
 
-    def test_corner_must_turn_into_tail(self):
+    def test_move_into_potential_position_small(self):
         """ only option is to turn where tail _could_ be if enemy grows """
         data = TestGameData()
         data.set_self(
@@ -148,7 +147,7 @@ class TestAvoidanceLogic(unittest.TestCase):
         """ only option is to turn where tail _could_ be if enemy grows """
         data = TestGameData()
         data.set_self([(0, 0), (0, 1), (0, 2)], health=10)
-        data.add_enemy([(1, 1), (1, 0)])
+        data.add_enemy([(2, 1), (1, 1), (1, 0)])
 
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'right')
@@ -222,6 +221,21 @@ class TestAvoidanceLogic(unittest.TestCase):
             health=10
         )
         data.add_enemy([(0, 5), (0, 4), (1, 4)])
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertEqual(response.json()['move'], 'up')
+
+    def test_boxed_in(self):
+        """ calc boxed in region """
+        data = TestGameData()
+        data.set_self(
+            [
+                (0, 1), (0, 2), (1, 2), (2, 2), (3, 2),
+                (4, 2), (4, 1), (4, 0), (5, 0), (5, 1),
+                (5, 2), (5, 3), (5, 4), (5, 5), (5, 6),
+                (5, 7)
+            ],
+        )
 
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'up')

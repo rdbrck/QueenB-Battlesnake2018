@@ -1,5 +1,5 @@
 from .utils import dist, neighbours, sub, get_directions, get_next_from_direction
-from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, FOOD_MEDIUM_DIST, FOOD_HUNGRY_HEALTH, SPOILED, SNAKE,\
+from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, FOOD_MEDIUM_DIST, FOOD_HUNGRY_HEALTH, SPOILED, SNAKE, DISABLE_STEALING,\
                        FOOD_RATING, ENEMY_RATING, BODY_RATING, EMPTY_RATING, SPOILED_RATING, FOOD_DANGEROUS_HEALTH, FOOD_DANGEROUS_DIST, FOOD_STEAL_DIST
 
 import random
@@ -33,14 +33,14 @@ def need_food(board, bad_positions, snake):
         # check if enemy is approaching food we are close to
         steal = False
         for enemy in board.snakes:
-            if enemy.attributes['id'] != snake.attributes['id'] and dist(enemy.head, food) <= FOOD_STEAL_DIST:
-                steal = True
+            if enemy.attributes['id'] != snake.attributes['id'] and dist(enemy.head, food) <= FOOD_MEDIUM_DIST + FOOD_STEAL_DIST:
+                steal = True and not DISABLE_STEALING
                 break
 
         # prioritize safe food if it's close and we are a little hungry otherwise wait a little bit
         if dist(food, snake.head) <= FOOD_CLOSE_DIST and (snake.attributes['health'] <= FOOD_CLOSE_HEALTH or steal):
             potential_food.append(food)
-        elif dist(food, snake.head) <= FOOD_MEDIUM_DIST and snake.attributes['health'] <= FOOD_MEDIUM_HEALTH:
+        elif dist(food, snake.head) <= FOOD_MEDIUM_DIST and (snake.attributes['health'] <= FOOD_MEDIUM_HEALTH or steal):
             potential_food.append(food)
         elif snake.attributes['health'] < FOOD_HUNGRY_HEALTH:
             potential_food.append(food)
