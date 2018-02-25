@@ -1,7 +1,7 @@
 from .entities import Board
 from .strategy import need_food, check_attack
 from .utils import timing, get_direction, add, neighbours, dist, touching
-from .algorithms import bfs, find_safest_positions, rate_food, flood_fill
+from .algorithms import bfs, find_safest_positions, rate_food, flood_fill, rate_cell
 from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS, FOOD_BOXED_IN_HEALTH,\
                        SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR, TAIL_PREFERENCE_FACTOR, LOG_LEVEL
 
@@ -203,7 +203,11 @@ def move():
                     thread.join()
 
                 if len(next_move) > 0:  # if not then no good path so we need to do a fallback move
-                    path = min(next_move, key=len)
+                    move_scores = []
+                    for path in next_move:
+                        move_scores.append(sum(rate_cell(point, board) for point in path))
+                    max_move_score = max(move_scores)
+                    path = next_move[move_scores.index(max_move_score)]
                     move = get_direction(snake.head, path[0])
 
     except Exception as e:

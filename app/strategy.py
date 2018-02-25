@@ -60,7 +60,7 @@ def need_food(board, bad_positions, snake):
     for fud in potential_food:
         # if we are really low on health or the food is not super close then add it
         if snake.attributes['health'] < FOOD_DANGEROUS_HEALTH or dist(snake.head, fud) > FOOD_DANGEROUS_DIST:
-            if not next_to_wall(food, board) or snake.attributes['health'] < FOOD_HUNGRY_WALL_HEALTH:
+            if not next_to_wall(fud, board) or snake.attributes['health'] < FOOD_HUNGRY_WALL_HEALTH:
                 food_to_get.append(fud)
                 continue
 
@@ -68,7 +68,7 @@ def need_food(board, bad_positions, snake):
         for direction in get_directions(snake.head, fud):
             next_pos = get_next_from_direction(snake.head, direction)
             if next_pos not in bad_positions and board.inside(next_pos) and board.get_cell(next_pos) != SNAKE:
-                if not next_to_wall(food, board) or snake.attributes['health'] < FOOD_HUNGRY_WALL_HEALTH:
+                if not next_to_wall(fud, board) or snake.attributes['health'] < FOOD_HUNGRY_WALL_HEALTH:
                     food_to_get.append(fud)
                     break
 
