@@ -8,7 +8,7 @@ from collections import deque
 from .utils import neighbours, surrounding, sub, dist, touching, next_to_wall
 from .entities import Board
 from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED, SAFE_SPACE_FACTOR, ENABLE_CHECKERBOARD_SIZE,\
-                       FOOD_RATING, SPOILED_RATING, EMPTY_RATING, BODY_RATING, ENEMY_RATING, OUT_SIDE_BOARD_RATING, EXPLORED
+                       FOOD_RATING, SPOILED_RATING, EMPTY_RATING, BODY_RATING, ENEMY_RATING, OUT_SIDE_BOARD_RATING
 
 
 def rate_cell(cell, board, bloom_level=4):
@@ -106,7 +106,6 @@ def find_safest_positions(snake, board, bad_positions):
         checkerboard_count += 1
 
     results = sorted(potential_cells, key=lambda x: x[1], reverse=True)
-
     return results[:5]
 
 
@@ -117,33 +116,18 @@ def rate_food(current_position, board, board_food):
 
 
 def bfs(starting_position, target_position, board, exclude, return_list, include_start=False):
-    """
-    BFS implementation to search for path to food
-
-    :param starting_position: starting position
-    :param target_position: target position
-    :param board: the board state
-
-    example:
-
-    bfs((0,0), (2,2), board) -> [(0,0), (0,1), (0,2), (1,2), (2,2)]
-    """
     def _find_paths(starting_position, target_position, board, return_list, include_start):
         def _get_path_from_nodes(node, include_start):
             path = []
             while(node):
-                path.insert(0, (node[0], node[1]))  # Reverse
+                path.insert(0, (node[0], node[1]))
                 node = node[2]
-            if include_start:
-                return_list.append(path)
-                return True
-            return_list.append(path[1:])
+            if not include_start:
+                path = path[1:]
+            return_list.append(path)
             return True
 
-        x = starting_position[0]
-        y = starting_position[1]
-        queue = deque([(x, y, None)])
-
+        queue = deque([(starting_position[0], starting_position[1], None)])
         while len(queue) > 0:
             node = queue.popleft()
             x = node[0]
@@ -152,43 +136,32 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
             if (x, y) == target_position:  # If we reach target_position
                 return _get_path_from_nodes(node, include_start)  # Rebuild path
 
-            if (board.get_cell((x, y)) == EXPLORED or board.get_cell((x, y)) == SNAKE) and not (x, y) == starting_position:
+            if board.get_cell((x, y)) == SNAKE and not (x, y) == starting_position:
                 continue
 
-            board.set_cell((x, y), EXPLORED)  # Mark as explored
+            board.set_cell((x, y), SNAKE)  # Mark as explored
 
             for i in neighbours(node):
                 if board.inside((i[0], i[1])):
                     queue.append((i[0], i[1], node))
 
-        return  False # No path
+        return False  # No path
 
     found_path = False
-    board_copy = deepcopy(board)
-    board_copy.set_cell((starting_position[0], starting_position[1]), EMPTY)
+    board_copy = Board(clone=board)
+
+    for point in exclude:
+        board_copy.set_cell(point, SNAKE)
 
     # We want to avoid going along the wall if possible. Make new board that excludes the outside
-    small_board = deepcopy(board_copy)
-    small_board.height = board_copy.height - 1
-    small_board.width = board_copy.width - 1
+    small_board = Board(clone=board_copy)
+    small_board.height = small_board.height - 1
+    small_board.width = small_board.width - 1
     small_board.start_index = 1
 
     if not next_to_wall(starting_position, board_copy) and not next_to_wall(target_position, board_copy):
-        for excluded_point in exclude:
-            # for the small board. If the exclue point is next to open space on the regular board don't count it as exclude as
-            # we will always have the ability to loop back.
-            if next_to_wall(excluded_point, small_board):
-                neighbour_points = neighbours(excluded_point)
-                for neighbour_point in neighbour_points:
-                    if next_to_wall(neighbour_point, board_copy) and board_copy.get_cell(neighbour_point) != SNAKE:
-                        continue
-            small_board.set_cell(excluded_point, EXPLORED)
         found_path = _find_paths(starting_position, target_position, small_board, return_list, include_start)
 
     if not found_path:
-        for excluded_point in exclude:
-            board_copy.set_cell(excluded_point, EXPLORED)
         _find_paths(starting_position, target_position, board_copy, return_list, include_start)
-
     return
-

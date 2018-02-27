@@ -50,7 +50,6 @@ EMPTY = 0
 SNAKE = 1
 FOOD = 2
 SPOILED = 3
-EXPLORED = 999
 
 FOOD_CLOSE_HEALTH = 80  # Between this and ignore health just go for close food
 FOOD_CLOSE_DIST = 3  # The distance food is away to be considered close

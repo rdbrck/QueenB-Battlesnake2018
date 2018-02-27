@@ -202,12 +202,9 @@ def move():
                     thread.start()
                     thread.join()
 
-                if len(next_move) > 0:  # if not then no good path so we need to do a fallback move
-                    move_scores = []
-                    for path in next_move:
-                        move_scores.append(sum(rate_cell(point, board) for point in path))
-                    max_move_score = max(move_scores)
-                    path = next_move[move_scores.index(max_move_score)]
+                if len(next_move) > 0:
+                    # instead of max or min choose path with the best rated average
+                    path = max([(path, sum(rate_cell(point, board) for point in path)/len(path)) for path in next_move], key=lambda x:x[1])[0]
                     move = get_direction(snake.head, path[0])
 
     except Exception as e:
