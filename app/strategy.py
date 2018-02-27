@@ -1,4 +1,4 @@
-from .utils import dist, neighbours, sub, get_directions, get_next_from_direction
+from .utils import dist, neighbours, sub, get_directions, get_next_from_direction, next_to_wall
 from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, FOOD_MEDIUM_DIST, FOOD_HUNGRY_HEALTH, SPOILED, SNAKE, DISABLE_STEALING,\
                        FOOD_RATING, ENEMY_RATING, BODY_RATING, EMPTY_RATING, SPOILED_RATING, FOOD_DANGEROUS_HEALTH, FOOD_DANGEROUS_DIST, FOOD_STEAL_DIST, \
                        FOOD_HUNGRY_WALL_HEALTH

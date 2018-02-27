@@ -173,7 +173,7 @@ def longest_path(starting_position, target_position, board, exclude):
         if start == end:
             return (path[1:], len(path))
 
-        highest = None
+        highest = ([], 0)
         for point in neighbours(start):
             if point in path or board.outside(point) or board.get_cell(point) == SNAKE:
                 continue
@@ -182,7 +182,7 @@ def longest_path(starting_position, target_position, board, exclude):
             value = _create_path(point, end, board, path)
             path.remove(point)
 
-            if value and (not highest or value[1] > highest[1]):
+            if value and value[1] > highest[1]:
                 highest = value
 
         return highest

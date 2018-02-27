@@ -239,13 +239,17 @@ def move():
                     "left": len(flood_fill(temp_board, (snake.head[0]-1, snake.head[1])))
                 }
 
+                for pos in potential_snake_positions:
+                    if board.get_cell(pos) == 0:
+                        temp_board.set_cell(pos, 0)
+
                 # less restrictive as it doesn't look at the potential next move
                 if all(direction < snake.attributes['length'] for direction in floods.values()):
                     floods = {
-                        "up": len(flood_fill(board, (snake.head[0], snake.head[1]-1))),
-                        "down": len(flood_fill(board, (snake.head[0], snake.head[1]+1))),
-                        "right": len(flood_fill(board, (snake.head[0]+1, snake.head[1]))),
-                        "left": len(flood_fill(board, (snake.head[0]-1, snake.head[1])))
+                        "up": len(flood_fill(temp_board, (snake.head[0], snake.head[1]-1))),
+                        "down": len(flood_fill(temp_board, (snake.head[0], snake.head[1]+1))),
+                        "right": len(flood_fill(temp_board, (snake.head[0]+1, snake.head[1]))),
+                        "left": len(flood_fill(temp_board, (snake.head[0]-1, snake.head[1])))
                     }
 
                 move = max(iter(floods.keys()), key=(lambda key: floods[key]))
