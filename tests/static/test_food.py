@@ -137,3 +137,27 @@ class TestFoodLogic(unittest.TestCase):
 
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertTrue(response.json()['move'] != 'left')
+
+    def test_blocked_in_potential_big_snake(self):
+        data = TestGameData()
+        data.set_dimensions(15, 15)
+        data.set_self(
+            [
+                (5, 8), (4, 8), (4, 7), (3, 7), (2, 7), (1, 7), (1, 8), (2, 8), (3, 8), (3, 9),
+                (3, 10), (4, 10), (4, 9), (5, 9), (6, 9), (7, 9), (8, 9), (9, 9), (10, 9), (10, 10),
+                (9, 10), (8, 10), (7, 10), (6, 10), (6, 10)
+            ]
+        )
+        data.set_food([(5, 7), (10, 2), (0, 12), (1, 5), (0, 8), (10, 14), (2, 12), (5, 0), (0, 5), (4, 13)])
+        data.add_enemy(
+            [
+                (6, 7), (7, 7), (8, 7), (9, 7), (9, 6), (10, 6), (11, 6), (11, 5), (12, 5), (13, 5), (13, 4),
+                (13, 3), (13, 2), (13, 1), (13, 0), (12, 0), (11, 0), (10, 0), (10, 1), (11, 1), (12, 1),
+                (12, 2), (11, 2), (11, 3), (11, 4), (10, 4), (10, 3), (9, 3), (9, 2), (9, 1), (9, 0), (8, 0),
+                (8, 1), (7, 1), (6, 1), (5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1), (0, 2), (1, 2), (1, 3),
+                (2, 3), (3, 3), (4, 3), (4, 3)
+            ]
+        )
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertEqual(response.json()['move'], 'right')

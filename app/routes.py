@@ -1,7 +1,7 @@
 from .entities import Board
 from .strategy import need_food, check_attack
 from .utils import timing, get_direction, add, neighbours, dist, touching
-from .algorithms import bfs, find_safest_positions, rate_food, flood_fill, rate_cell
+from .algorithms import bfs, find_safest_positions, rate_food, flood_fill, rate_cell, longest_path
 from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS, FOOD_BOXED_IN_HEALTH,\
                        SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR, TAIL_PREFERENCE_FACTOR, LOG_LEVEL
 
@@ -44,8 +44,6 @@ def move():
     data = {}
     move = None
     time_remaining = [150]  # leave 50ms for network
-    next_move = []
-    thread_pool = []
     potential_snake_positions = []
     bad_positions = []
 
@@ -127,38 +125,51 @@ def move():
             with timing("boxed_in", time_remaining):
                 # get the flooded squares
                 flooded_squares = flood_fill(board, snake.head, True)
-                exit = snake.tail
+                exit = None
 
-                # loop through snake starting from tail and check if adjacent to flood
-                for piece in list(reversed(snake.body)):
-                    for pos in flooded_squares:
-                        if touching(pos, piece):
-                            exit = pos
-                            break
-                    if exit != snake.tail:
-                        break
-                
-                directions = []
-                for position in [v[0] for v in number_of_squares if v[1] > 0]:
-                    directions.append((position, get_direction(snake.head, position)))
-                    t = Thread(target=bfs(position, exit, board, bad_positions, next_move, include_start=True))
-                    thread_pool.append(t)
+                # loop through all snakes starting from tail and check if adjacent to flood choose closest that will be available by the time we get there
+                for snek in board.snakes:
+                    turns_until_space = 0
+                    for piece in list(reversed(snek.body)):
+                        turns_until_space += 1
+                        for pos in flooded_squares:
+                            if touching(pos, piece) and (exit is None or exit[1] > turns_until_space):
+                                exit = (pos, turns_until_space)
+                                break
 
-                for thread in thread_pool:
-                    thread.start()
-                    thread.join()
+                # if there isn't a good exit then we need to fallback
+                if exit:
+                    # if the area is more than a certain amount the longest path takes too long
+                    if len(flooded_squares) > 20:
+                        directions = []
+                        thread_pool = []
+                        next_move = []
 
-                next_move = [path for path in next_move if not len(path) == 0]
+                        for position in [v[0] for v in number_of_squares if v[1] > 0]:
+                            directions.append((position, get_direction(snake.head, position)))
+                            t = Thread(target=bfs(position, exit[0], board, bad_positions, next_move, include_start=True))
+                            thread_pool.append(t)
 
-                if len(next_move) > 0:
-                    path = max([move for move in next_move], key=len)
-                    move = get_direction(snake.head, path[0])
+                        for thread in thread_pool:
+                            thread.start()
+                            thread.join()
+
+                        next_move = [path for path in next_move if not len(path) == 0]
+
+                        if len(next_move) > 0:
+                            path = max([move for move in next_move], key=len)
+                            move = get_direction(snake.head, path[0])
+                    else:
+                        path = longest_path(snake.head, exit[0], board, bad_positions)
+                        if len(path) > 0:
+                            move = get_direction(snake.head, path[0])
 
         # If we need food find a good path to said food (prioritized over attacking/boxed in when hungry)
         if food and not move:
             with timing("find_food", time_remaining):
                 food_positions_ratings = rate_food(snake.head, board, food)
                 thread_pool = []
+                next_move = []
 
                 for position in [position[0] for position in food_positions_ratings]:
                     t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
@@ -193,6 +204,7 @@ def move():
                 positions = find_safest_positions(snake, board, bad_positions)
                 positions = [position[0] for position in positions]
                 thread_pool = []
+                next_move = []
 
                 for position in positions:
                     t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
@@ -214,12 +226,6 @@ def move():
         # If code above failed then fallback to a floodfill style move
         if not move:
             logger.info("CHANGED MOVE - floodfill fallback.")
-            # setup the board for fallback and verification
-            with timing("setup fallback and verification board", time_remaining):
-                for enemy in board.snakes:
-                    if enemy.attributes['id'] != snake.attributes['id'] and (len(board.food) == 0 or enemy.closest_food(board.food)[1] != dist(enemy.tail, snake.head)):
-                            board.set_cell(enemy.tail, 0)
-
             with timing("floodfill fallback", time_remaining):
                 temp_board = Board(clone=board)
                 for pos in potential_snake_positions:
@@ -233,13 +239,17 @@ def move():
                     "left": len(flood_fill(temp_board, (snake.head[0]-1, snake.head[1])))
                 }
 
+                for pos in potential_snake_positions:
+                    if board.get_cell(pos) == 0:
+                        temp_board.set_cell(pos, 0)
+
                 # less restrictive as it doesn't look at the potential next move
                 if all(direction < snake.attributes['length'] for direction in floods.values()):
                     floods = {
-                        "up": len(flood_fill(board, (snake.head[0], snake.head[1]-1))),
-                        "down": len(flood_fill(board, (snake.head[0], snake.head[1]+1))),
-                        "right": len(flood_fill(board, (snake.head[0]+1, snake.head[1]))),
-                        "left": len(flood_fill(board, (snake.head[0]-1, snake.head[1])))
+                        "up": len(flood_fill(temp_board, (snake.head[0], snake.head[1]-1))),
+                        "down": len(flood_fill(temp_board, (snake.head[0], snake.head[1]+1))),
+                        "right": len(flood_fill(temp_board, (snake.head[0]+1, snake.head[1]))),
+                        "left": len(flood_fill(temp_board, (snake.head[0]-1, snake.head[1])))
                     }
 
                 move = max(iter(floods.keys()), key=(lambda key: floods[key]))

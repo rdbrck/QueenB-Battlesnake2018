@@ -1,5 +1,5 @@
 from .utils import dist, neighbours, sub, get_directions, get_next_from_direction, next_to_wall
-from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, FOOD_MEDIUM_DIST, FOOD_HUNGRY_HEALTH, SPOILED, SNAKE,\
+from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, FOOD_MEDIUM_DIST, FOOD_HUNGRY_HEALTH, SPOILED, SNAKE, DISABLE_STEALING,\
                        FOOD_RATING, ENEMY_RATING, BODY_RATING, EMPTY_RATING, SPOILED_RATING, FOOD_DANGEROUS_HEALTH, FOOD_DANGEROUS_DIST, FOOD_STEAL_DIST, \
                        FOOD_HUNGRY_WALL_HEALTH
 
@@ -34,14 +34,14 @@ def need_food(board, bad_positions, snake):
         # check if enemy is approaching food we are close to
         steal = False
         for enemy in board.snakes:
-            if enemy.attributes['id'] != snake.attributes['id'] and dist(enemy.head, food) <= FOOD_STEAL_DIST:
-                steal = True
+            if enemy.attributes['id'] != snake.attributes['id'] and dist(enemy.head, food) <= FOOD_MEDIUM_DIST + FOOD_STEAL_DIST:
+                steal = True and not DISABLE_STEALING
                 break
 
         # prioritize safe food if it's close and we are a little hungry otherwise wait a little bit
         if dist(food, snake.head) <= FOOD_CLOSE_DIST and (snake.attributes['health'] <= FOOD_CLOSE_HEALTH or steal):
             potential_food.append(food)
-        elif dist(food, snake.head) <= FOOD_MEDIUM_DIST and snake.attributes['health'] <= FOOD_MEDIUM_HEALTH:
+        elif dist(food, snake.head) <= FOOD_MEDIUM_DIST and (snake.attributes['health'] <= FOOD_MEDIUM_HEALTH or steal):
             potential_food.append(food)
         elif snake.attributes['health'] < FOOD_HUNGRY_HEALTH:
             potential_food.append(food)
@@ -55,22 +55,29 @@ def need_food(board, bad_positions, snake):
             if dist(food, snake.head) <= snake.attributes['health']:
                 potential_food.append(food)
 
+    if not potential_food:
+        return None
+
+    # get food that is not next to wall so we can potentially ignore food that is enxt to wall
+    no_wall_food = []
+    for fud in potential_food:
+        if not next_to_wall(fud, board) or snake.attributes['health'] < FOOD_HUNGRY_WALL_HEALTH:
+            no_wall_food.append(fud)
+
     # remove food that puts us in a bad_position
     food_to_get = []
-    for fud in potential_food:
+    for fud in (potential_food if len(no_wall_food) == 0 else no_wall_food):
         # if we are really low on health or the food is not super close then add it
         if snake.attributes['health'] < FOOD_DANGEROUS_HEALTH or dist(snake.head, fud) > FOOD_DANGEROUS_DIST:
-            if not next_to_wall(fud, board) or snake.attributes['health'] < FOOD_HUNGRY_WALL_HEALTH:
-                food_to_get.append(fud)
-                continue
+            food_to_get.append(fud)
+            continue
 
         # for each direction that would make sense for the shortest path verify the next move doesn't put us in a bad position
         for direction in get_directions(snake.head, fud):
             next_pos = get_next_from_direction(snake.head, direction)
             if next_pos not in bad_positions and board.inside(next_pos) and board.get_cell(next_pos) != SNAKE:
-                if not next_to_wall(fud, board) or snake.attributes['health'] < FOOD_HUNGRY_WALL_HEALTH:
-                    food_to_get.append(fud)
-                    break
+                food_to_get.append(fud)
+                break
 
     return (food_to_get if len(food_to_get) > 0 else None)
 
