@@ -5,13 +5,13 @@ from math import floor
 from copy import deepcopy
 from collections import deque
 
-from .utils import neighbours, surrounding, sub, dist, touching
+from .utils import neighbours, surrounding, sub, dist, touching, next_to_wall
 from .entities import Board
 from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED, SAFE_SPACE_FACTOR, ENABLE_CHECKERBOARD_SIZE,\
                        FOOD_RATING, SPOILED_RATING, EMPTY_RATING, BODY_RATING, ENEMY_RATING, OUT_SIDE_BOARD_RATING
 
 
-def _rate_cell(cell, board, bloom_level=4):
+def rate_cell(cell, board, bloom_level=4):
     """ rates a cell based on proximity to other snakes, food, the edge of the board, etc """
 
     cells = []
@@ -76,11 +76,6 @@ def _touching_flood(flood, pos):
 
 
 def find_safest_positions(snake, board, bad_positions):
-    """
-    finds a position in a binary-search like fashion, this could probably just
-    linearly scan the whole board, rating every position, and then returning the highest n
-    positions
-    """
     # account for bad_positions
     temp_board = Board(clone=board)
     for pos in bad_positions:
@@ -107,66 +102,66 @@ def find_safest_positions(snake, board, bad_positions):
             checkerboard_count += 1
             if (checkerboard_count % skip_cell_modulous) != 0:
                 continue
-            potential_cells.append(((x, y), _rate_cell((x, y), temp_board)))
+            potential_cells.append(((x, y), rate_cell((x, y), temp_board)))
         checkerboard_count += 1
 
     results = sorted(potential_cells, key=lambda x: x[1], reverse=True)
-
     return results[:5]
 
 
 def rate_food(current_position, board, board_food):
     """ finds and rates food positions """
-    rated_food = [(food, _rate_cell(food, board)) for food in board_food]
+    rated_food = [(food, rate_cell(food, board)) for food in board_food]
     return sorted(rated_food, key=lambda x: x[1], reverse=True)
 
 
 def bfs(starting_position, target_position, board, exclude, return_list, include_start=False):
-    """
-    BFS implementation to search for path to food
+    def _find_paths(starting_position, target_position, board, return_list, include_start):
+        def _get_path_from_nodes(node, include_start):
+            path = []
+            while(node):
+                path.insert(0, (node[0], node[1]))
+                node = node[2]
+            if not include_start:
+                path = path[1:]
+            return_list.append(path)
+            return True
 
-    :param starting_position: starting position
-    :param target_position: target position
-    :param board: the board state
+        queue = deque([(starting_position[0], starting_position[1], None)])
+        while len(queue) > 0:
+            node = queue.popleft()
+            x = node[0]
+            y = node[1]
 
-    example:
+            if (x, y) == target_position:  # If we reach target_position
+                return _get_path_from_nodes(node, include_start)  # Rebuild path
 
-    bfs((0,0), (2,2), board) -> [(0,0), (0,1), (0,2), (1,2), (2,2)]
-    """
-    def _get_path_from_nodes(node, include_start):
-        path = []
-        while(node):
-            path.insert(0, (node[0], node[1]))  # Reverse
-            node = node[2]
-        if include_start:
-            return return_list.append(path)
-        return return_list.append(path[1:])
+            if board.get_cell((x, y)) == SNAKE and not (x, y) == starting_position:
+                continue
 
-    x = starting_position[0]
-    y = starting_position[1]
-    board_copy = deepcopy(board)
-    board_copy.set_cell((x, y), EMPTY)
+            board.set_cell((x, y), SNAKE)  # Mark as explored
 
-    for excluded_point in exclude:
-        board_copy.set_cell(excluded_point, SPOILED)
+            for i in neighbours(node):
+                if board.inside((i[0], i[1])):
+                    queue.append((i[0], i[1], node))
 
-    queue = deque([(x, y, None)])
+        return False  # No path
 
-    while len(queue) > 0:
-        node = queue.popleft()
-        x = node[0]
-        y = node[1]
+    found_path = False
+    board_copy = Board(clone=board)
 
-        if (x, y) == target_position:  # If we reach target_position
-            return _get_path_from_nodes(node, include_start)  # Rebuild path
+    for point in exclude:
+        board_copy.set_cell(point, SNAKE)
 
-        if (board_copy.get_cell((x, y)) == SPOILED or board_copy.get_cell((x, y)) == SNAKE) and not (x, y) == starting_position:
-            continue
+    # We want to avoid going along the wall if possible. Make new board that excludes the outside
+    small_board = Board(clone=board_copy)
+    small_board.height = small_board.height - 1
+    small_board.width = small_board.width - 1
+    small_board.start_index = 1
 
-        board_copy.set_cell((x, y), SPOILED)  # Mark as explored
+    if not next_to_wall(starting_position, board_copy) and not next_to_wall(target_position, board_copy):
+        found_path = _find_paths(starting_position, target_position, small_board, return_list, include_start)
 
-        for i in neighbours(node):
-            if board_copy.inside((i[0], i[1])):
-                queue.append((i[0], i[1], node))
-
-    return None  # No path
+    if not found_path:
+        _find_paths(starting_position, target_position, board_copy, return_list, include_start)
+    return

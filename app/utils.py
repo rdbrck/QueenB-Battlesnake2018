@@ -119,8 +119,8 @@ def food_in_box(flood_squares, board):
 
 
 def next_to_wall(pos, board):
-    if pos[0] == (board.width - 1) or pos[0] == 0:
+    if pos[0] == (board.width - 1) or pos[0] == board.start_index:
         return True
-    if pos[1] == (board.height - 1) or pos[1] == 0:
+    if pos[1] == (board.height - 1) or pos[1] == board.start_index:
         return True
     return False

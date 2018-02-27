@@ -73,7 +73,7 @@ SPOILED_RATING = 4
 BODY_RATING = 0.5
 EMPTY_RATING = 0.25
 ENEMY_RATING = -2
-OUT_SIDE_BOARD_RATING = -2
+OUT_SIDE_BOARD_RATING = -3
 
 ENABLE_CHECKERBOARD_SIZE = 400  # above this area we need to enable checkerboard when rating cells for find_safest
 
