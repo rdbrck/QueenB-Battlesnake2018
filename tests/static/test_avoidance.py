@@ -1,5 +1,6 @@
 import unittest
 import requests
+from datetime import datetime, timedelta
 
 from utils import TEST_INSTANCE, TestGameData
 
@@ -225,21 +226,6 @@ class TestAvoidanceLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'up')
 
-    def test_boxed_in(self):
-        """ calc boxed in region """
-        data = TestGameData()
-        data.set_self(
-            [
-                (0, 1), (0, 2), (1, 2), (2, 2), (3, 2),
-                (4, 2), (4, 1), (4, 0), (5, 0), (5, 1),
-                (5, 2), (5, 3), (5, 4), (5, 5), (5, 6),
-                (5, 7)
-            ],
-        )
-
-        response = requests.post(TEST_INSTANCE,  json=data.data)
-        self.assertEqual(response.json()['move'], 'up')
-
     def test_better_to_not_move_down(self):
         """ found through testing, not sure why it wouldn't go up """
         data = TestGameData()
@@ -357,3 +343,66 @@ class TestAvoidanceLogic(unittest.TestCase):
 
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'right')
+
+    #The four boxed in tests demonstrate our max area when executing the longest_path method for boxed_in (NPHard)
+    def test_boxed_in_10(self):
+        """ If we only use the NP Hard boxed in then this will pass as it is below the execution time barrier """
+        data = TestGameData()   
+        data.set_dimensions(2, 7)
+        data.set_self([(0, 2), (0, 1), (1, 1), (1, 0), (0, 0), (0, 0)])
+
+        time1 = datetime.now()
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        time2 = datetime.now()
+
+        self.assertTrue(time2 < time1 + timedelta(milliseconds=150))
+        self.assertEqual(response.json()['move'], 'down')
+
+    def test_boxed_in_20(self):
+        """ If we only use the NP Hard boxed in then this will pass as it is below the execution time barrier """
+        data = TestGameData()   
+        data.set_dimensions(4, 7)
+        data.set_self([(0, 2), (0, 1), (1, 1), (2, 1), (3, 1), (3, 0), (2, 0), (1, 0), (0, 0), (0, 0)])
+
+        time1 = datetime.now()
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        time2 = datetime.now()
+
+        self.assertTrue(time2 < time1 + timedelta(milliseconds=150))
+        self.assertEqual(response.json()['move'], 'down')
+
+    def test_boxed_in_25(self):
+        """ If we only use the NP Hard boxed in then this will fail as it exceeds the execution time """
+        data = TestGameData()   
+        data.set_dimensions(5, 7)
+        data.set_self(
+            [
+                (0, 2), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1),
+                (4, 0), (3, 0), (2, 0), (1, 0), (0, 0), (0, 0)
+            ]
+        )
+
+        time1 = datetime.now()
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        time2 = datetime.now()
+
+        self.assertTrue(time2 < time1 + timedelta(milliseconds=150))
+        self.assertEqual(response.json()['move'], 'down')
+
+    def test_boxed_in_30(self):
+        """ If we only use the NP Hard boxed in then this will fail as it exceeds the execution time """
+        data = TestGameData()   
+        data.set_dimensions(6, 8)
+        data.set_self(
+            [
+                (0, 3), (0, 2), (1, 2), (2, 2), (3, 2), (4, 2), (5, 2), (5, 1), (4, 1),
+                (3, 1), (2, 1), (1, 1), (0, 1), (0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)
+            ]
+        )
+
+        time1 = datetime.now()
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        time2 = datetime.now()
+
+        self.assertTrue(time2 < time1 + timedelta(milliseconds=150))
+        self.assertEqual(response.json()['move'], 'down')

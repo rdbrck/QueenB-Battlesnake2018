@@ -172,38 +172,14 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
 
 
 def longest_path(starting_position, target_position, board, exclude):
-    """ Gets the longest path between two points - can be very slow if given a large enough area """
-    def _expand_rating(start, end, board_copy):
-        if start == end:
-            return board_copy
-
-        not_needed = []
-        for point in neighbours(start):
-            if board_copy.outside(point) or board_copy.get_cell(point) == SNAKE or board_copy.get_cell_meta(point) is not None or point == end:
-                not_needed.append(point)
-                continue
-
-            dist = board_copy.get_cell_meta(start) + 1
-            board_copy.set_cell_meta(point, dist)
-
-        for point in neighbours(start):
-            if point in not_needed:
-                continue
-
-            board_copy = _expand_rating(point, end, board_copy)
-
-        return board_copy
-
+    """ Gets the longest path between two points - can be very slow if given a large enough area (NP hard problem)"""
     def _create_path(start, end, board, path):
         if start == end:
-            total = 0
-            for point in path[1:]:
-                total += board.get_cell_meta(point)
-            return (path[1:], total)
+            return (path[1:], len(path))
 
         highest = None
         for point in neighbours(start):
-            if point in path or board_copy.outside(point) or board_copy.get_cell(point) == SNAKE or board_copy.get_cell_meta(point) is None:
+            if point in path or board.outside(point) or board.get_cell(point) == SNAKE:
                 continue
 
             path.append(point)
@@ -220,7 +196,5 @@ def longest_path(starting_position, target_position, board, exclude):
 
     for excluded_point in exclude:
         board_copy.set_cell(excluded_point, SNAKE)
-    board_copy.set_cell_meta(target_position, 0)
 
-    rated_board = _expand_rating(target_position, starting_position, board_copy)
-    return _create_path(starting_position, target_position, rated_board, [starting_position])[0]
+    return _create_path(starting_position, target_position, board_copy, [starting_position])[0]

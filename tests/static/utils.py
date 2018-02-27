@@ -18,6 +18,10 @@ class TestGameData(object):
         with open('./point.json') as point:
             self.point_default = ujson.load(point)
 
+    def set_dimensions(self, width, height):
+        self.data['width'] = width
+        self.data['height'] = height
+
     def set_food(self, coords):
         foods = []
         for coord in coords:
