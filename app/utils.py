@@ -116,3 +116,11 @@ def food_in_box(flood_squares, board):
         if fud in flood_squares:
             return True
     return False
+
+
+def next_to_wall(pos, board):
+    if pos[0] == (board.width - 1) or pos[0] == 0:
+        return True
+    if pos[1] == (board.height - 1) or pos[1] == 0:
+        return True
+    return False
