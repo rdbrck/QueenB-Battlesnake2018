@@ -128,13 +128,15 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
             return True
 
         queue = deque([(starting_position[0], starting_position[1], None)])
+        found_path = False
         while len(queue) > 0:
             node = queue.popleft()
             x = node[0]
             y = node[1]
 
             if (x, y) == target_position:  # If we reach target_position
-                return _get_path_from_nodes(node, include_start)  # Rebuild path
+                _get_path_from_nodes(node, include_start)  # Rebuild path
+                found_path = True
 
             if board.get_cell((x, y)) == SNAKE and not (x, y) == starting_position:
                 continue
@@ -145,7 +147,7 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
                 if board.inside((i[0], i[1])):
                     queue.append((i[0], i[1], node))
 
-        return False  # No path
+        return found_path
 
     found_path = False
     board_copy = Board(clone=board)

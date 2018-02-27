@@ -15,9 +15,10 @@ class Snake(object):
             self.attributes = {k: kwargs[k] for k in Snake.ATTRIBUTES}
             self.coords = [(p['x'], p['y']) for p in kwargs['body']['data']]
 
-            # remove tail from snakes that are > 2 long
-            if len(self.coords) > 2:
+            # remove tail from snakes
+            if self.coords[len(self.coords)-1] != self.coords[len(self.coords)-2] and len(self.coords) > 2:
                 self.coords = self.coords[:-1]
+
 
     def __len__(self):
         return self.attributes['length']
