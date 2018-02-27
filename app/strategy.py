@@ -1,6 +1,7 @@
 from .utils import dist, neighbours, sub, get_directions, get_next_from_direction
 from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, FOOD_MEDIUM_DIST, FOOD_HUNGRY_HEALTH, SPOILED, SNAKE, DISABLE_STEALING,\
-                       FOOD_RATING, ENEMY_RATING, BODY_RATING, EMPTY_RATING, SPOILED_RATING, FOOD_DANGEROUS_HEALTH, FOOD_DANGEROUS_DIST, FOOD_STEAL_DIST
+                       FOOD_RATING, ENEMY_RATING, BODY_RATING, EMPTY_RATING, SPOILED_RATING, FOOD_DANGEROUS_HEALTH, FOOD_DANGEROUS_DIST, FOOD_STEAL_DIST, \
+                       FOOD_HUNGRY_WALL_HEALTH
 
 import random
 
@@ -54,9 +55,18 @@ def need_food(board, bad_positions, snake):
             if dist(food, snake.head) <= snake.attributes['health']:
                 potential_food.append(food)
 
+    if not potential_food:
+        return None
+
+    # get food that is not next to wall so we can potentially ignore food that is enxt to wall
+    no_wall_food = []
+    for fud in potential_food:
+        if not next_to_wall(fud, board) or snake.attributes['health'] < FOOD_HUNGRY_WALL_HEALTH:
+            no_wall_food.append(fud)
+
     # remove food that puts us in a bad_position
     food_to_get = []
-    for fud in potential_food:
+    for fud in (potential_food if len(no_wall_food) == 0 else no_wall_food):
         # if we are really low on health or the food is not super close then add it
         if snake.attributes['health'] < FOOD_DANGEROUS_HEALTH or dist(snake.head, fud) > FOOD_DANGEROUS_DIST:
             food_to_get.append(fud)

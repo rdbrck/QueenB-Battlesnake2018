@@ -69,6 +69,7 @@ class Board(object):
             # Clone another board
             self.width = clone.width
             self.height = clone.height
+            self.start_index = clone.start_index
             self.cells = []
             self.meta_cells = []
             self.own_snake_id = clone.own_snake_id
@@ -84,6 +85,7 @@ class Board(object):
             # Initialize a board from a battlesnake gamestate dict
             self.width = kwargs['width']
             self.height = kwargs['height']
+            self.start_index = 0
             self.cells = []
             self.meta_cells = []
             self.own_snake_id = kwargs['you']['id']
@@ -137,14 +139,14 @@ class Board(object):
         return self.meta_cells[pos[0]][pos[1]]
 
     def outside(self, pos):
-        return pos[0] < 0 or pos[0] >= self.width or pos[1] < 0 or pos[1] >= self.height
+        return pos[0] < self.start_index or pos[0] >= self.width or pos[1] < self.start_index or pos[1] >= self.height
 
     def inside(self, pos):
         return not self.outside(pos)
 
     def vacant(self, pos):
         # Inlined for performance:
-        return not (pos[0] < 0 or pos[0] >= self.width or pos[1] < 0 or pos[1] >= self.height) and self.cells[pos[0]][pos[1]] != SNAKE
+        return not (pos[0] < self.start_index or pos[0] >= self.width or pos[1] < self.start_index or pos[1] >= self.height) and self.cells[pos[0]][pos[1]] != SNAKE
 
     def has_snake(self, pos):
         return (self.cells[pos[0]][pos[1]] == SNAKE)

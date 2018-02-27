@@ -56,6 +56,7 @@ FOOD_CLOSE_DIST = 3  # The distance food is away to be considered close
 FOOD_MEDIUM_HEALTH = 65  # Between this and close distance is medium distance 
 FOOD_MEDIUM_DIST = 6  # How many moves away is a medium distance food
 FOOD_HUNGRY_HEALTH = 50  # When we should start going directly to safe food and contested food if there isn't safe food
+FOOD_HUNGRY_WALL_HEALTH = 30  # When we should start going for food next to walls
 FOOD_DANGEROUS_HEALTH = 10  # If below value in health go for potentially dangerous food
 FOOD_DANGEROUS_DIST = 6  # Go for potentially dangerous food if distance to food is greater than value
 FOOD_STEAL_DIST = 3  # If we are within close/medium dist to a food and an enemy is within close/medium+value then steal it no matter our health
@@ -73,7 +74,7 @@ SPOILED_RATING = 4
 BODY_RATING = 0.5
 EMPTY_RATING = 0.25
 ENEMY_RATING = -2
-OUT_SIDE_BOARD_RATING = -2
+OUT_SIDE_BOARD_RATING = -3
 
 ENABLE_CHECKERBOARD_SIZE = 400  # above this area we need to enable checkerboard when rating cells for find_safest
 
