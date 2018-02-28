@@ -146,7 +146,7 @@ class Board(object):
 
     def vacant(self, pos):
         # Inlined for performance:
-        return not (pos[0] < self.start_index or pos[0] >= self.width or pos[1] < self.start_index or pos[1] >= self.height) and self.cells[pos[0]][pos[1]] != SNAKE
+        return self.inside(pos) and self.cells[pos[0]][pos[1]] != SNAKE
 
     def has_snake(self, pos):
         return (self.cells[pos[0]][pos[1]] == SNAKE)

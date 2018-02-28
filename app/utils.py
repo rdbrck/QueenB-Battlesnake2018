@@ -2,7 +2,7 @@ import time
 import logging
 from contextlib import contextmanager
 
-from .constants import DIR_NAMES, DIR_VECTORS
+from .constants import DIR_NAMES, DIR_VECTORS, SNAKE
 
 
 logging.basicConfig()
@@ -124,3 +124,7 @@ def next_to_wall(pos, board):
     if pos[1] == (board.height - 1) or pos[1] == board.start_index:
         return True
     return False
+
+
+def available_next_positions(board, snake):
+    return [pos for pos in neighbours(snake.head) if board.vacant(pos)]

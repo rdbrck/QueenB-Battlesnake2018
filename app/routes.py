@@ -1,6 +1,6 @@
 from .entities import Board
 from .strategy import need_food, check_attack
-from .utils import timing, get_direction, add, neighbours, dist, touching, food_in_box
+from .utils import timing, get_direction, add, neighbours, dist, touching, food_in_box, available_next_positions
 from .algorithms import bfs, find_safest_positions, rate_food, flood_fill, rate_cell, longest_path
 from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS, FOOD_BOXED_IN_HEALTH,\
                        SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR, TAIL_PREFERENCE_FACTOR, LOG_LEVEL
@@ -64,7 +64,7 @@ def move():
         with timing("setup board and gather data", time_remaining):
             for enemy_snake in board.snakes:
                 if enemy_snake.attributes['id'] != snake.attributes['id']:
-                    enemy_options = [pos for pos in neighbours(enemy_snake.head) if board.inside(pos) and board.get_cell(pos) != 1]
+                    enemy_options = available_next_positions(board, enemy_snake)
                     if len(enemy_options) == 0:
                         for pos in enemy_snake.coords:
                             board.set_cell(pos, 0)
@@ -78,33 +78,28 @@ def move():
 
             # Get size of space we can safely move into (should be larger than body size)
             safe_space_size = snake.attributes.get('length') * SAFE_SPACE_FACTOR
-            for cell in neighbours(snake.head):
-                if board.inside(cell):
-                    flooded_squares = flood_fill(board, cell, False)
-                    tail_present = bool(set(neighbours(snake.tail)) & set(flooded_squares))
-                    square_count = len(flooded_squares)
-                    number_of_squares.append([cell, square_count, tail_present])
-                    if square_count <= safe_space_size:
-                        bad_positions.append(cell)
+            for pos in available_next_positions(board, snake):
+                flooded_squares = flood_fill(board, pos, False)
+                square_count = len(flooded_squares)
+                number_of_squares.append([pos, square_count, any(x in neighbours(snake.head) for x in flooded_squares)])
+                if square_count <= safe_space_size:
+                    bad_positions.append(pos)
 
             # If all are bad don't set the largest as bad
-            if set([cell[0] for cell in number_of_squares]).issubset(set(bad_positions)):
+            if all(pos[1] <= safe_space_size for pos in number_of_squares):
+                boxed_in = True
+
                 for square in number_of_squares:
                     # if tail present then scale region size by TAIL_PREFERENCE_FACTOR
                     if square[2]:
                         square[1] *= TAIL_PREFERENCE_FACTOR
 
-                number_of_squares = sorted(number_of_squares, key=lambda x: x[1], reverse=True)
-
                 # go through each option and remove the largest from bad positions
+                number_of_squares = sorted(number_of_squares, key=lambda x: x[1], reverse=True)
                 for x in range(0, len(number_of_squares)):
                     # remove from bad_positions if it's the largest or has the same length as the largest
-                    if number_of_squares[0][1] == number_of_squares[x][1] and number_of_squares[x][0] not in snake.body:
+                    if number_of_squares[0][1] == number_of_squares[x][1]:
                         bad_positions.remove(number_of_squares[x][0])
-
-                # if there is atleast two none zero floodfills set boxed_in
-                if len([v for v in number_of_squares if v[1] > 0]) > 1:
-                    boxed_in = True
 
         # Check if we have the opportunity to attack
         with timing("check_attack", time_remaining):
