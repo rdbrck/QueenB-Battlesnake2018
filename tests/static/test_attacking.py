@@ -86,3 +86,21 @@ class TestAttackLogic(unittest.TestCase):
 
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertTrue(response.json()['move'] != 'left')
+
+    def test_enemy_between_snake_wall_right(self):
+        """ should tunnel them into wall and not cut them off """
+        data = TestGameData()
+        data.set_self([(17, 18), (16, 18), (15, 18), (14, 18), (14, 17), (14, 16)])
+        data.add_enemy([(16, 19), (15, 19), (14, 19), (13, 19), (12, 19), (12, 18), (13, 18)])
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertEqual(response.json()['move'], 'right')
+
+    def test_enemy_between_snake_wall_up(self):
+        """ should tunnel them into wall and not cut them off """
+        data = TestGameData()
+        data.set_self([(1, 3), (1, 4), (1, 5), (1, 6), (1, 7)])
+        data.add_enemy([(0, 4), (0, 5), (0, 6), (0, 7), (0, 8), (0, 9)])
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertEqual(response.json()['move'], 'up')

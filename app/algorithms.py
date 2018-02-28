@@ -82,7 +82,7 @@ def find_safest_positions(snake, board, bad_positions):
         temp_board.set_cell(pos, SNAKE)
 
     # Setup bounds and modulous
-    bounds = [(0, 0), (board.width-1, board.height-1)]
+    bounds = [(board.start_index, board.start_index), (board.width-2, board.height-2)]
     skip_cell_modulous = 1 if (board.width*board.height) <= ENABLE_CHECKERBOARD_SIZE else 2
     checkerboard_count = 0
 

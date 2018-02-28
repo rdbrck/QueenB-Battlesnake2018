@@ -1,6 +1,6 @@
 from .entities import Board
 from .strategy import need_food, check_attack
-from .utils import timing, get_direction, add, neighbours, dist, touching
+from .utils import timing, get_direction, add, neighbours, dist, touching, food_in_box
 from .algorithms import bfs, find_safest_positions, rate_food, flood_fill, rate_cell, longest_path
 from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS, FOOD_BOXED_IN_HEALTH,\
                        SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR, TAIL_PREFERENCE_FACTOR, LOG_LEVEL
@@ -97,13 +97,9 @@ def move():
                     if number_of_squares[0][1] == number_of_squares[x][1] and number_of_squares[x][0] not in snake.body:
                         bad_positions.remove(number_of_squares[x][0])
 
-                # if there is atleast two none zero floodfills then check for box in
+                # if there is atleast two none zero floodfills set boxed_in
                 if len([v for v in number_of_squares if v[1] > 0]) > 1:
                     boxed_in = True
-                    # if all of the non zeros are the same and the rest are zero then we are boxed in
-                    for value in [pos[1] for pos in number_of_squares]:
-                        if value not in [number_of_squares[0][1], 0]:
-                            boxed_in = False
 
         # Check if we have the opportunity to attack
         with timing("check_attack", time_remaining):
@@ -146,6 +142,9 @@ def move():
                         next_move = []
 
                         for position in [v[0] for v in number_of_squares if v[1] > 0]:
+                            if position in bad_positions:
+                                continue
+
                             directions.append((position, get_direction(snake.head, position)))
                             t = Thread(target=bfs(position, exit[0], board, bad_positions, next_move, include_start=True))
                             thread_pool.append(t)
@@ -239,12 +238,25 @@ def move():
                     "left": len(flood_fill(temp_board, (snake.head[0]-1, snake.head[1])))
                 }
 
-                for pos in potential_snake_positions:
-                    if board.get_cell(pos) == 0:
-                        temp_board.set_cell(pos, 0)
+                # less restrictive as it doesn't look at the potential next move off of food
+                if all(direction == 0 for direction in floods.values()):
+                    for pos in potential_snake_positions:
+                        if board.get_cell(pos) == 0:
+                            temp_board.set_cell(pos, 0)
 
-                # less restrictive as it doesn't look at the potential next move
-                if all(direction < snake.attributes['length'] for direction in floods.values()):
+                    floods = {
+                        "up": len(flood_fill(temp_board, (snake.head[0], snake.head[1]-1))),
+                        "down": len(flood_fill(temp_board, (snake.head[0], snake.head[1]+1))),
+                        "right": len(flood_fill(temp_board, (snake.head[0]+1, snake.head[1]))),
+                        "left": len(flood_fill(temp_board, (snake.head[0]-1, snake.head[1])))
+                    }
+
+                # less restrictive as it doesn't look at the potential next move on food
+                if all(direction == 0 for direction in floods.values()):
+                    for pos in potential_snake_positions:
+                        if board.get_cell(pos) in [2, 3]:
+                            temp_board.set_cell(pos, 0)
+
                     floods = {
                         "up": len(flood_fill(temp_board, (snake.head[0], snake.head[1]-1))),
                         "down": len(flood_fill(temp_board, (snake.head[0], snake.head[1]+1))),
