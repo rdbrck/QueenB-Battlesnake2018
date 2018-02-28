@@ -64,11 +64,12 @@ def move():
         with timing("setup board and gather data", time_remaining):
             for enemy_snake in board.snakes:
                 if enemy_snake.attributes['id'] != snake.attributes['id']:
-                    if all(board.outside(pos) or board.get_cell(pos) == 1 for pos in neighbours(enemy_snake.head)):
+                    enemy_options = [pos for pos in neighbours(enemy_snake.head) if board.inside(pos) and board.get_cell(pos) != 1]
+                    if len(enemy_options) == 0:
                         for pos in enemy_snake.coords:
                             board.set_cell(pos, 0)
                         continue
-                    potential_snake_positions.extend([position for position in enemy_snake.potential_positions() if board.inside(position)])
+                    potential_snake_positions.extend(enemy_options)
 
         # Flood fill in each direction to find bad directions
         with timing("intial flood fill detection", time_remaining):
