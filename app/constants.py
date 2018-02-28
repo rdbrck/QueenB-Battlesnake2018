@@ -71,11 +71,11 @@ TAIL_PREFERENCE_FACTOR = 1.5
 # Ratings for how important each thing is
 FOOD_RATING = 6
 SPOILED_RATING = 4
-BODY_RATING = 0.5
+BODY_RATING = 0.25
 EMPTY_RATING = 0.25
 ENEMY_RATING = -2
 OUT_SIDE_BOARD_RATING = -3
 
-ENABLE_CHECKERBOARD_SIZE = 400  # above this area we need to enable checkerboard when rating cells for find_safest
+ENABLE_CHECKERBOARD_SIZE = 400  # above this area we need to enable checkerboard when rating cells for find_safest (we will need to wait for deployed version to determine this)
 
 LOG_LEVEL = logging.DEBUG

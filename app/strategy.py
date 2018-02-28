@@ -118,7 +118,8 @@ def check_attack(board, bad_positions, snake):
 
         direction = sub(enemy.coords[0], enemy.coords[1])
         if direction[0] != 0 and enemy.head[1] in [snake.head[1] - 1, snake.head[1] + 1]:  # moving in the x plane and our head is one row off
-            for x in range(1, abs(enemy.head[0] - snake.head[0])):  # loop through whole body but not head
+            head_distance = abs(enemy.head[0] - snake.head[0])
+            for x in range(1, head_distance + 1):  # loop through whole body but not head
                 position = (enemy.head[0] + direction[0] * x, enemy.head[1])  # find next path in tunnel
 
                 # if enemy snake is not in a tunnel for the paths leading up to our head then ignore snake
@@ -126,11 +127,14 @@ def check_attack(board, bad_positions, snake):
                     break
 
                 # if it's a tunnel the whole way it's possible that we can kill it if it's a safe move
-                if x == abs(enemy.head[0] - snake.head[0]) - 1:
+                if x == head_distance - 1:
                     possible_attacks.append((snake.head[0], enemy.head[1]))
+                elif x == head_distance and snake.attributes['health'] <= enemy.attributes['health']:
+                    possible_attacks.append((snake.head[0] + direction[0], snake.head[1]))
 
-        elif enemy.head[0] in [snake.head[0] - 1, snake.head[0] + 1]:  # moving in the y plane and our head is one column off
-            for x in range(1, abs(enemy.head[1] - snake.head[1])):  # loop through whole body but not head
+        elif direction[1] != 0 and enemy.head[0] in [snake.head[0] - 1, snake.head[0] + 1]:  # moving in the y plane and our head is one column off
+            head_distance = abs(enemy.head[1] - snake.head[1])
+            for x in range(1, head_distance + 1):  # loop through whole body but not head
                 position = (enemy.head[0], enemy.head[1] + direction[1] * x)  # find next path in tunnel
 
                 # if enemy snake is not in a tunnel for the paths leading up to our head then ignore snake
@@ -138,8 +142,10 @@ def check_attack(board, bad_positions, snake):
                     break
 
                 # if it's a tunnel the whole way it's possible that we can kill it if it's a safe move
-                if x == abs(enemy.head[1] - snake.head[1]) - 1:
+                if x == head_distance - 1:
                     possible_attacks.append((enemy.head[0], snake.head[1]))
+                elif x == head_distance and snake.attributes['health'] <= enemy.attributes['health']:
+                    possible_attacks.append((snake.head[0], snake.head[1] + direction[1]))
 
     # remove possible attack spots where the enemy snake is equal in size or bigger
     for enemy in enemy_snakes:
@@ -152,4 +158,6 @@ def check_attack(board, bad_positions, snake):
         if pos in possible_attacks:
             possible_attacks.remove(pos)
 
+    # I don't knw why this would happen but we will add it anyways
+    possible_attacks = [pos for pos in possible_attacks if board.inside(pos)]
     return (possible_attacks[0] if len(possible_attacks) > 0 else None)
