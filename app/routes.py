@@ -60,10 +60,14 @@ def move():
         return {'move': 'up'}  # In this case we don't know what the board looks like so guess
 
     try:
-        # Get spots that an enemy snake could move into
-        with timing("enemy snake heads", time_remaining):
+        # Get spots that an enemy snake could move into and also set snakes that are guaranteed to die as empty squares
+        with timing("setup board and gather data", time_remaining):
             for enemy_snake in board.snakes:
                 if enemy_snake.attributes['id'] != snake.attributes['id']:
+                    if all(board.outside(pos) or board.get_cell(pos) == 1 for pos in neighbours(enemy_snake.head)):
+                        for pos in enemy_snake.coords:
+                            board.set_cell(pos, 0)
+                        continue
                     potential_snake_positions.extend([position for position in enemy_snake.potential_positions() if board.inside(position)])
 
         # Flood fill in each direction to find bad directions
