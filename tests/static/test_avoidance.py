@@ -432,3 +432,29 @@ class TestAvoidanceLogic(unittest.TestCase):
 
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'down')
+
+    def test_2nd_snake_death_escape(self):
+        """Test dead-end escape via 2nd snake death.
+
+        AaBb.X..cC
+        .aabbxccc.
+        ..a.b.c...
+        ....b.c...
+
+        Snake B and Snake C create dead-ends for us (Snake X).
+        The right dead-end caused by C is longer than the left dead-end caused
+        by B, but we know that Snake B is about to die and so an escape route
+        is about to appear on the left dead-end before it kills us, whereas 
+        unless Snake C does something stupid, death is inevitable on the right
+        dead-end. (The naive choice is the right dead-end because it's longer.)
+        """
+
+        data = TestGameData()
+        data.set_dimensions(10, 4)
+        data.set_self([(5, 0), (5, 1)])
+        data.add_enemy([(2, 0), (3, 0), (3, 1), (4, 1), (4, 2), (4, 3)])
+        data.add_enemy([(0, 0), (1, 0), (1, 1), (2, 1), (2, 2)])
+        data.add_enemy([(9, 0), (8, 0), (8, 1), (7, 1), (6, 1), (6, 2), (6, 3)])
+
+        response = requests.post(TEST_INSTANCE, json=data.data)
+        self.assertEqual(response.json()['move'], 'left')
