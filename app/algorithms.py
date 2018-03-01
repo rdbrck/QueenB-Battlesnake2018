@@ -149,16 +149,16 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
 
     if not next_to_wall(starting_position, board_copy) and not next_to_wall(target_position, board_copy):
         # A bunch of edge cases here. Basically try and alow going along small_board's wall if we can loop back around
-        # do to having an escape out next to the normal board's wall.
+        # due to having an escape rout next to the normal board's wall.
         for point in exclude:
             if small_board.inside(point):
                 for surrounding_point in surrounding(starting_position):
-                    # Check if the point to exclude is is one sqaure away from out head (i.e we could potentially collide next tutn)
+                    # Check if the point to exclude is is one sqaure away from out head (i.e we could potentially collide next turn)
                     if point == surrounding_point and small_board.get_cell(point) != SNAKE:
                         # Found a potential collision next turn.
                         if next_to_wall(point, small_board):
                             # We have a one space gap between our head and the real game board wall
-                            # Only exclude this exclude point is the space between us and the real wall isn't empty. Otherwise we can
+                            # Only exclude this exclude point if the space between us and the real wall isn't empty. Otherwise we can
                             # still escape by looping back
                             for neighbour_point in neighbours(point):
                                 if next_to_wall(neighbour_point, board_copy) and board_copy.get_cell(neighbour_point) == SNAKE:
