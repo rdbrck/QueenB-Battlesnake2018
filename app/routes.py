@@ -3,7 +3,8 @@ from .strategy import need_food, check_attack
 from .utils import timing, get_direction, add, neighbours, dist, touching, food_in_box, available_next_positions
 from .algorithms import bfs, find_safest_positions, rate_food, flood_fill, rate_cell, longest_path
 from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS, FOOD_BOXED_IN_HEALTH,\
-                       SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR, TAIL_PREFERENCE_FACTOR, LOG_LEVEL
+                       SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR, TAIL_PREFERENCE_FACTOR, LOG_LEVEL,\
+                       SNAKE, FOOD, SPOILED, EMPTY
 
 from functools import reduce
 from threading import Thread
@@ -65,10 +66,11 @@ def move():
             for enemy_snake in board.snakes:
                 if enemy_snake.attributes['id'] != snake.attributes['id']:
                     enemy_options = available_next_positions(board, enemy_snake)
-                    if len(enemy_options) == 0:
+                    if len(enemy_options) == 0 or (enemy_snake.attributes['health'] == 0 and not any(x in enemy_options for x in board.food)):
                         for pos in enemy_snake.coords:
-                            board.set_cell(pos, 0)
+                            board.set_cell(pos, EMPTY)
                         continue
+
                     potential_snake_positions.extend(enemy_options)
 
         # Flood fill in each direction to find bad directions
@@ -232,7 +234,7 @@ def move():
             with timing("floodfill fallback", time_remaining):
                 temp_board = Board(clone=board)
                 for pos in potential_snake_positions:
-                    temp_board.set_cell(pos, 1)
+                    temp_board.set_cell(pos, SNAKE)
 
                 # try flood fill with bad positions and no worry tails included
                 floods = {
@@ -245,8 +247,8 @@ def move():
                 # less restrictive as it doesn't look at the potential next move off of food
                 if all(direction == 0 for direction in floods.values()):
                     for pos in potential_snake_positions:
-                        if board.get_cell(pos) == 0:
-                            temp_board.set_cell(pos, 0)
+                        if board.get_cell(pos) == EMPTY:
+                            temp_board.set_cell(pos, EMPTY)
 
                     floods = {
                         "up": len(flood_fill(temp_board, (snake.head[0], snake.head[1]-1))),
@@ -258,8 +260,8 @@ def move():
                 # less restrictive as it doesn't look at the potential next move on food
                 if all(direction == 0 for direction in floods.values()):
                     for pos in potential_snake_positions:
-                        if board.get_cell(pos) in [2, 3]:
-                            temp_board.set_cell(pos, 0)
+                        if board.get_cell(pos) in [FOOD, SPOILED]:
+                            temp_board.set_cell(pos, EMPTY)
 
                     floods = {
                         "up": len(flood_fill(temp_board, (snake.head[0], snake.head[1]-1))),
@@ -276,11 +278,11 @@ def move():
     # Verify we didn't pick a bad move (wall or snake) - shouldn't happen but there if needed
     with timing("verify move", time_remaining):
         m_move = add(snake.head, DIR_VECTORS[DIR_NAMES.index(move)])
-        if board.inside(m_move) and board.get_cell(m_move) == 1:
+        if board.inside(m_move) and board.get_cell(m_move) == SNAKE:
             logger.info("CHANGED MOVE - verify fallback.")
             for direction in DIR_NAMES:
                 m_move = add(snake.head, DIR_VECTORS[DIR_NAMES.index(direction)])
-                if board.inside(m_move) and board.get_cell(m_move) != 1:
+                if board.inside(m_move) and board.get_cell(m_move) != SNAKE:
                     move = direction
                     break
 
