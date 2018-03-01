@@ -1,6 +1,6 @@
 from .utils import neighbours, surrounding, sub, dist, touching, next_to_wall, available_next_positions
 from .entities import Board
-from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED, SAFE_SPACE_FACTOR, ENABLE_CHECKERBOARD_SIZE,\
+from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED, SAFE_SPACE_FACTOR,\
                        FOOD_RATING, SPOILED_RATING, EMPTY_RATING, BODY_RATING, ENEMY_RATING, OUT_SIDE_BOARD_RATING
 
 import time
@@ -11,7 +11,7 @@ from copy import deepcopy
 from collections import deque
 
 
-def rate_cell(cell, board, bloom_level=4):
+def rate_cell(cell, board, snake, bloom_level=4):
     """ rates a cell based on proximity to other snakes, food, the edge of the board, etc """
 
     cells = []
@@ -27,7 +27,6 @@ def rate_cell(cell, board, bloom_level=4):
     # SNAKE = 1
     # FOOD = 2
     # SPOILED = 3
-    own_snake = board.get_snake(board.own_snake_id)
     cell_weightings = [EMPTY_RATING, ENEMY_RATING, FOOD_RATING, SPOILED_RATING, BODY_RATING, OUT_SIDE_BOARD_RATING]
     cell_values = []
 
@@ -35,14 +34,14 @@ def rate_cell(cell, board, bloom_level=4):
         weight_key = 5  # Outside the board
         if board.inside(m_cell[0]):
             weight_key = board.get_cell(m_cell[0])
-            if m_cell[0] in own_snake.coords:
+            if m_cell[0] in snake.coords:
                 weight_key = 4
         cell_values.append((weight_key, m_cell[1]))
 
     return reduce(lambda carry, m_cell: carry + cell_weightings[m_cell[0]]/m_cell[1], cell_values, 0)
 
 
-def flood_fill(board, start_pos, allow_start_in_occupied_cell=False):
+def flood_fill(board, start_pos, allow_start_in_occupied_cell=False, max_size=None):
     """
     Flood fill is an algorithm that expands from a starting position into adjacent
     vacant cells. Returns the set of all vacant cells found.
@@ -64,6 +63,8 @@ def flood_fill(board, start_pos, allow_start_in_occupied_cell=False):
             if p not in visited and board.vacant(p):
                 visited.add(p)
                 todo.append(p)
+        if max_size and len(visited) > max_size:
+            break
 
     return visited
 
@@ -81,37 +82,27 @@ def find_safest_positions(snake, board, bad_positions):
     for pos in bad_positions:
         temp_board.set_cell(pos, SNAKE)
 
-    # Setup bounds and modulous
-    bounds = [(1, 1), (board.width-2, board.height-2)]
-    skip_cell_modulous = 1 if (board.width*board.height) <= ENABLE_CHECKERBOARD_SIZE else 2
-    checkerboard_count = 0
-
     # Create a checkerboard of positions to check
     potential_cells = []
-    for x in range(bounds[0][0], bounds[1][0]+1):
-        for y in range(bounds[0][1], bounds[1][1]+1):
-            if board.get_cell((x, y)) in [SNAKE, FOOD, SPOILED]:
-                continue
-            if (x, y) in bad_positions:
+    for x in range(0, board.width):
+        for y in range(0, board.height):
+            if temp_board.get_cell((x, y)) in [SNAKE, FOOD, SPOILED]:
                 continue
 
-            flood = flood_fill(temp_board, (x, y))
-            if len(flood) <= snake.attributes['length'] * SAFE_SPACE_FACTOR and not _touching_flood(flood, snake.head):
+            safe_area_size = snake.attributes['length'] * SAFE_SPACE_FACTOR
+            flood = flood_fill(temp_board, (x, y), max_size=safe_area_size)
+            if len(flood) <= safe_area_size and not _touching_flood(flood, snake.head):
                 continue
 
-            checkerboard_count += 1
-            if (checkerboard_count % skip_cell_modulous) != 0:
-                continue
-            potential_cells.append(((x, y), rate_cell((x, y), temp_board)))
-        checkerboard_count += 1
+            potential_cells.append(((x, y), rate_cell((x, y), temp_board, snake)))
 
     results = sorted(potential_cells, key=lambda x: x[1], reverse=True)
     return results[:5]
 
 
-def rate_food(current_position, board, board_food):
+def rate_food(snake, board, board_food):
     """ finds and rates food positions """
-    rated_food = [(food, rate_cell(food, board)) for food in board_food]
+    rated_food = [(food, rate_cell(food, board, snake)) for food in board_food]
     return sorted(rated_food, key=lambda x: x[1], reverse=True)
 
 

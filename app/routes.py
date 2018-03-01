@@ -166,7 +166,7 @@ def move():
         # If we need food find a good path to said food (prioritized over attacking/boxed in when hungry)
         if food and not move:
             with timing("find_food", time_remaining):
-                food_positions_ratings = rate_food(snake.head, board, food)
+                food_positions_ratings = rate_food(snake, board, food)
                 thread_pool = []
                 next_move = []
 
@@ -215,7 +215,7 @@ def move():
 
                 if len(next_move) > 0:
                     # instead of max or min choose path with the best rated average
-                    path = max([(path, sum(rate_cell(point, board) for point in path)/len(path)) for path in next_move], key=lambda x:x[1])[0]
+                    path = max([(path, sum(rate_cell(point, board, snake) for point in path)/len(path)) for path in next_move], key=lambda x:x[1])[0]
                     move = get_direction(snake.head, path[0])
 
     except Exception as e:
