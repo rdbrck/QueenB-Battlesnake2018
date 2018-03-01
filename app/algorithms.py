@@ -148,14 +148,13 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
     small_board.start_index = 1
 
     if not next_to_wall(starting_position, board_copy) and not next_to_wall(target_position, board_copy):
-        # A bunch of edge cases here. Basically try and alow going along small_board's wall if we loop back around
+        # A bunch of edge cases here. Basically try and alow going along small_board's wall if we can loop back around
         # do to having an escape out next to the normal board's wall.
         for point in exclude:
             if small_board.inside(point):
                 for surrounding_point in surrounding(starting_position):
                     if point == surrounding_point and small_board.get_cell(point) != SNAKE:
                         if next_to_wall(point, small_board):
-                            print('holla!')
                             for neighbour_point in neighbours(point):
                                 if next_to_wall(neighbour_point, board_copy) and board_copy.get_cell(neighbour_point) == SNAKE:
                                     small_board.set_cell(point, SNAKE)
