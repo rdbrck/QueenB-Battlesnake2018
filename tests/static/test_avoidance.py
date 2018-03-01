@@ -444,7 +444,7 @@ class TestAvoidanceLogic(unittest.TestCase):
         Snake B and Snake C create dead-ends for us (Snake X).
         The right dead-end caused by C is longer than the left dead-end caused
         by B, but we know that Snake B is about to die and so an escape route
-        is about to appear on the left dead-end before it kills us, whereas 
+        is about to appear on the left dead-end before it kills us, whereas
         unless Snake C does something stupid, death is inevitable on the right
         dead-end. (The naive choice is the right dead-end because it's longer.)
         """
@@ -458,3 +458,16 @@ class TestAvoidanceLogic(unittest.TestCase):
 
         response = requests.post(TEST_INSTANCE, json=data.data)
         self.assertEqual(response.json()['move'], 'left')
+
+    def test_avoid_wall_when_snake_next_to_ourself(self):
+        """If we are two away from the wall but next to a snake, chose to go up
+        against the snake rather than the wall to maintain an exit route
+        """
+
+        data = TestGameData()
+        data.set_dimensions(6, 8)
+        data.set_self([(4, 5), (3, 5), (2, 5), (1, 5), (0, 5), (0, 4), (0, 3)])
+        data.add_enemy([(3, 3), (3, 4), (2, 4), (1, 4)])
+
+        response = requests.post(TEST_INSTANCE, json=data.data)
+        self.assertEqual(response.json()['move'], 'up')
