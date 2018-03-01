@@ -1,4 +1,4 @@
-from .utils import dist, neighbours, sub, get_directions, get_next_from_direction, next_to_wall
+from .utils import dist, neighbours, sub, get_directions, get_next_from_direction, next_to_wall, available_next_positions
 from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, FOOD_MEDIUM_DIST, FOOD_HUNGRY_HEALTH, SPOILED, SNAKE, DISABLE_STEALING,\
                        FOOD_RATING, ENEMY_RATING, BODY_RATING, EMPTY_RATING, SPOILED_RATING, FOOD_DANGEROUS_HEALTH, FOOD_DANGEROUS_DIST, FOOD_STEAL_DIST, \
                        FOOD_HUNGRY_WALL_HEALTH
@@ -99,12 +99,13 @@ def check_attack(board, bad_positions, snake):
     """ Determines if we have the opportunity to attack - doesn't seek out attacking but will attack given the opportunity """
     possible_attacks = []
     enemy_snakes = [enemy for enemy in board.snakes if enemy.attributes['id'] != snake.attributes['id']]
+    available_moves = available_next_positions(board, snake)
 
     # attack potential position that enemy would move into unless we are tailing their head
     for enemy in enemy_snakes:
         possible_attacks.extend([
-            position for position in enemy.potential_positions() if board.inside(position)
-            and not (_touching_body(snake, enemy) and _same_direction(snake, enemy)) and position in neighbours(snake.head)
+            pos for pos in available_next_positions(board, enemy) if pos in available_moves
+            and not (_touching_body(snake, enemy) and _same_direction(snake, enemy))
         ])
 
     # remove dups from extending logic
@@ -149,8 +150,11 @@ def check_attack(board, bad_positions, snake):
 
     # remove possible attack spots where the enemy snake is equal in size or bigger
     for enemy in enemy_snakes:
+        if enemy.attributes['length'] < snake.attributes['length']:
+            continue
+
         for neighbour in neighbours(enemy.head):
-            if neighbour in possible_attacks and enemy.attributes['length'] >= snake.attributes['length']:
+            if neighbour in possible_attacks:
                 possible_attacks.remove(neighbour)
 
     # remove possible attack moves if they have been deamed 'bad' as part of previous logic
@@ -158,6 +162,6 @@ def check_attack(board, bad_positions, snake):
         if pos in possible_attacks:
             possible_attacks.remove(pos)
 
-    # I don't knw why this would happen but we will add it anyways
+    # I don't know why this would happen but we will add it anyways
     possible_attacks = [pos for pos in possible_attacks if board.inside(pos)]
     return (possible_attacks[0] if len(possible_attacks) > 0 else None)

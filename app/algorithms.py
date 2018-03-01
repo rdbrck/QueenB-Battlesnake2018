@@ -1,4 +1,4 @@
-from .utils import neighbours, surrounding, sub, dist, touching, next_to_wall
+from .utils import neighbours, surrounding, sub, dist, touching, next_to_wall, available_next_positions
 from .entities import Board
 from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED, SAFE_SPACE_FACTOR, ENABLE_CHECKERBOARD_SIZE,\
                        FOOD_RATING, SPOILED_RATING, EMPTY_RATING, BODY_RATING, ENEMY_RATING, OUT_SIDE_BOARD_RATING
