@@ -64,8 +64,6 @@ def need_food(board, bad_positions, snake):
         if not next_to_wall(fud, board):
             no_wall_food.append(fud)
 
-    print(no_wall_food)
-
     if len(no_wall_food) == 0 and snake.attributes['health'] > FOOD_HUNGRY_WALL_HEALTH:
         return None
 
@@ -84,7 +82,6 @@ def need_food(board, bad_positions, snake):
                 food_to_get.append(fud)
                 break
 
-    print(food_to_get)
     return (food_to_get if len(food_to_get) > 0 else None)
 
 

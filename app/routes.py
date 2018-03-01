@@ -209,9 +209,6 @@ def move():
                 thread_pool = []
                 next_move = []
 
-                # print('----- Safe Positions -----')
-                # print(positions)
-                # print('--------------------------')
                 for position in positions:
                     t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
                     thread_pool.append(t)
@@ -221,9 +218,6 @@ def move():
                     thread.join()
 
                 if len(next_move) > 0:
-                    # print('----- Next Moves -----')
-                    # print(next_move)
-                    # print('--------------------------')
                     # instead of max or min choose path with the best rated average
                     path = max([(path, sum(rate_cell(point, board, snake) for point in path)/len(path)) for path in next_move], key=lambda x:x[1])[0]
                     move = get_direction(snake.head, path[0])

@@ -141,9 +141,6 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
     found_path = False
     board_copy = Board(clone=board)
 
-    for point in exclude:
-        board_copy.set_cell(point, SNAKE)
-
     # We want to avoid going along the wall if possible. Make new board that excludes the outside
     small_board = Board(clone=board_copy)
     small_board.height = small_board.height - 1
@@ -151,15 +148,15 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
     small_board.start_index = 1
 
     if not next_to_wall(starting_position, board_copy) and not next_to_wall(target_position, board_copy):
-        # # Be a little more lax on the small board. If the exclude positions can't block us immediatly, ignore them
-        # for point in exclude:
-        #     if point == starting_position:
-        #         small_board.set_cell(point, SNAKE)
+        # Be a little more lax on the small board. If the exclude positions can't block us immediatly, ignore them
+        for point in exclude:
+            if point == starting_position:
+                small_board.set_cell(point, SNAKE)
         found_path = _find_paths(starting_position, target_position, small_board, return_list, include_start)
 
     if not found_path:
-        # for point in exclude:
-        #     board_copy.set_cell(point, SNAKE)
+        for point in exclude:
+            board_copy.set_cell(point, SNAKE)
         _find_paths(starting_position, target_position, board_copy, return_list, include_start)
     return
 
