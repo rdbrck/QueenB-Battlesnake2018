@@ -66,10 +66,11 @@ def move():
             for enemy_snake in board.snakes:
                 if enemy_snake.attributes['id'] != snake.attributes['id']:
                     enemy_options = available_next_positions(board, enemy_snake)
-                    if len(enemy_options) == 0:
+                    if len(enemy_options) == 0 or (enemy_snake.attributes['health'] == 0 and not any(x in enemy_options for x in board.food)):
                         for pos in enemy_snake.coords:
                             board.set_cell(pos, EMPTY)
                         continue
+
                     potential_snake_positions.extend(enemy_options)
 
         # Flood fill in each direction to find bad directions
