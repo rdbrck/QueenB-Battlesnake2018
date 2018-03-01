@@ -66,7 +66,7 @@ def move():
             for enemy_snake in board.snakes:
                 if enemy_snake.attributes['id'] != snake.attributes['id']:
                     enemy_options = available_next_positions(board, enemy_snake)
-                    if len(enemy_options) == 0 or (enemy_snake.attributes['health'] == 0 and not any(x in enemy_options for x in board.food)):
+                    if (len(enemy_options) == 0 and snake.head not in neighbours(enemy_snake.head)) or enemy_snake.attributes['health'] == 0:
                         for pos in enemy_snake.coords:
                             board.set_cell(pos, EMPTY)
                         continue

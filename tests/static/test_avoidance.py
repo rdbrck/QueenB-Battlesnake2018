@@ -477,23 +477,3 @@ class TestAvoidanceLogic(unittest.TestCase):
 
         response = requests.post(TEST_INSTANCE, json=data.data)
         self.assertEqual(response.json()['move'], 'left')
-
-    def test_2nd_snake_death_escape_not_starved(self):
-        """
-        Test dead-end escape via 2nd snake death due to starving, but there will get food.
-
-        ..Bb.X..cC
-        ...bbxccc.
-        ....b.c...
-        ....b.c...
-        """
-
-        data = TestGameData()
-        data.set_dimensions(10, 4)
-        data.set_self([(5, 0), (5, 1)])
-        data.add_enemy([(2, 0), (3, 0), (3, 1), (4, 1), (4, 2), (4, 3)], health=0)
-        data.add_enemy([(9, 0), (8, 0), (8, 1), (7, 1), (6, 1), (6, 2), (6, 3)])
-        data.set_food([(1, 0)])
-
-        response = requests.post(TEST_INSTANCE, json=data.data)
-        self.assertEqual(response.json()['move'], 'right')
