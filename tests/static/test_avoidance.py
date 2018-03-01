@@ -444,7 +444,7 @@ class TestAvoidanceLogic(unittest.TestCase):
         Snake B and Snake C create dead-ends for us (Snake X).
         The right dead-end caused by C is longer than the left dead-end caused
         by B, but we know that Snake B is about to die and so an escape route
-        is about to appear on the left dead-end before it kills us, whereas
+        is about to appear on the left dead-end before it kills us, whereas 
         unless Snake C does something stupid, death is inevitable on the right
         dead-end. (The naive choice is the right dead-end because it's longer.)
         """
@@ -458,6 +458,45 @@ class TestAvoidanceLogic(unittest.TestCase):
 
         response = requests.post(TEST_INSTANCE, json=data.data)
         self.assertEqual(response.json()['move'], 'left')
+
+    def test_2nd_snake_death_escape_starved(self):
+        """
+        Test dead-end escape via 2nd snake death due to starving.
+
+        ..Bb.X..cC
+        ...bbxccc.
+        ....b.c...
+        ....b.c...
+        """
+
+        data = TestGameData()
+        data.set_dimensions(10, 4)
+        data.set_self([(5, 0), (5, 1)])
+        data.add_enemy([(2, 0), (3, 0), (3, 1), (4, 1), (4, 2), (4, 3)], health=0)
+        data.add_enemy([(9, 0), (8, 0), (8, 1), (7, 1), (6, 1), (6, 2), (6, 3)])
+
+        response = requests.post(TEST_INSTANCE, json=data.data)
+        self.assertEqual(response.json()['move'], 'left')
+
+    def test_2nd_snake_death_escape_not_starved(self):
+        """
+        Test dead-end escape via 2nd snake death due to starving, but there will get food.
+
+        ..Bb.X..cC
+        ...bbxccc.
+        ....b.c...
+        ....b.c...
+        """
+
+        data = TestGameData()
+        data.set_dimensions(10, 4)
+        data.set_self([(5, 0), (5, 1)])
+        data.add_enemy([(2, 0), (3, 0), (3, 1), (4, 1), (4, 2), (4, 3)], health=0)
+        data.add_enemy([(9, 0), (8, 0), (8, 1), (7, 1), (6, 1), (6, 2), (6, 3)])
+        data.set_food([(1, 0)])
+
+        response = requests.post(TEST_INSTANCE, json=data.data)
+        self.assertEqual(response.json()['move'], 'right')
 
     def test_avoid_wall_when_snake_next_to_ourself(self):
         """If we are two away from the wall but next to a snake, chose to go up
