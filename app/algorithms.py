@@ -121,14 +121,14 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
                 return True
 
             # ----- _loop_through_queue ----- #
-            ltq_found_path = False
+            _ltq_found_path = False
             while len(_ltq_queue) > 0:
                 node = _ltq_queue.popleft()
                 x = node[0]
                 y = node[1]
 
                 if (x, y) == target_position:  # If we reach target_position
-                    ltq_found_path = True
+                    _ltq_found_path = True
                     _get_path_from_nodes(node)  # Rebuild path
                     continue
 
@@ -140,23 +140,23 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
                 for i in neighbours(node):
                     if _fp_board.inside((i[0], i[1])):
                         _ltq_queue.append((i[0], i[1], node))
-            return ltq_found_path
+            return _ltq_found_path
 
         # ----- _find_paths ----- #
-        fp_found_path = False
+        _fp_found_path = False
         # First try and find a path to the target that immidiatly leads us away from the wall
         if next_to_wall(starting_position, board):
             queue = deque([])
             for i in neighbours(starting_position):
                 if board.inside(i) and not next_to_wall(i, board):
                     queue.append((i[0], i[1], (starting_position[0], starting_position[1], None)))
-            fp_found_path = _loop_through_queue(queue)
+            _fp_found_path = _loop_through_queue(queue)
 
         if not found_path:
             queue = deque([(starting_position[0], starting_position[1], None)])
-            fp_found_path = _loop_through_queue(queue)
+            _fp_found_path = _loop_through_queue(queue)
 
-        return fp_found_path  # No path
+        return _fp_found_path  # No path
 
     # ----- bfs ----- #
     found_path = False
