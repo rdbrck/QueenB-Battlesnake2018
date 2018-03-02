@@ -196,7 +196,6 @@ def detect_wall_tunnels(board):
             previous = end
             end = add(end, direction)
 
-
         # if edge of board was reached ebfore finding end of tunnel then skip snake
         if board.outside(end) or board.get_cell(end) == SNAKE or not previous:
             continue

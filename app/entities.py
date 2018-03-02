@@ -97,7 +97,7 @@ class Board(object):
 
             # Only take snakes that are alive
             self.snakes = [Snake(**s) for s in kwargs['snakes']['data']]
-            self.enemies = [s for s in self.snakes if s.attributes['id'] != self.own_snake_id]
+            self.enemies = [Snake(clone=s) for s in self.snakes if s.attributes['id'] != self.own_snake_id]
             self.food = [(p['x'], p['y']) for p in kwargs['food']['data']]
 
             # Fill out initially occupied cells on board
