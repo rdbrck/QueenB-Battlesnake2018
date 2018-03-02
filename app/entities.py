@@ -79,6 +79,7 @@ class Board(object):
                 self.meta_cells.append(clone.meta_cells[x].copy())
 
             self.snakes = [Snake(s) for s in clone.snakes]
+            self.enemies = [Snake(s) for s in clone.enemies]
             self.food = clone.food.copy()
 
         else:
@@ -96,6 +97,7 @@ class Board(object):
 
             # Only take snakes that are alive
             self.snakes = [Snake(**s) for s in kwargs['snakes']['data']]
+            self.enemies = [s for s in self.snakes if s.attributes['id'] != self.own_snake_id]
             self.food = [(p['x'], p['y']) for p in kwargs['food']['data']]
 
             # Fill out initially occupied cells on board
