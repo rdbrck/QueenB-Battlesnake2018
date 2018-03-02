@@ -156,7 +156,7 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
             queue = deque([(starting_position[0], starting_position[1], None)])
             _fp_found_path = _loop_through_queue(queue)
 
-        return _fp_found_path  # No path
+        return _fp_found_path
 
     # ----- bfs ----- #
     found_path = False

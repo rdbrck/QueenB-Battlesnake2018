@@ -478,7 +478,7 @@ class TestAvoidanceLogic(unittest.TestCase):
 
     def test_avoid_wall_when_snake_next_to_ourself(self):
         """
-        If we are two away from the wall but next to a snake, chose to go up
+        If we are two away from the wall but next to a snake, choose to go up
         against the snake rather than the wall to maintain an exit route
         """
         data = TestGameData()
@@ -492,3 +492,15 @@ class TestAvoidanceLogic(unittest.TestCase):
 
         response = requests.post(TEST_INSTANCE, json=data.data)
         self.assertEqual(response.json()['move'], 'up')
+
+
+    def test_move_away_from_wall_if_possible(self):
+        """
+        If we are against the wall, but there is a good path to our target point that doesn't use the wall, use it.
+        """
+        data = TestGameData()
+        data.set_dimensions(17, 17)
+        data.set_food([(6, 0)])
+        data.set_self([(16, 9), (16, 8), (15, 8), (14, 8)])
+        response = requests.post(TEST_INSTANCE, json=data.data)
+        self.assertEqual(response.json()['move'], 'left')
