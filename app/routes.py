@@ -150,7 +150,7 @@ def move():
                                 continue
 
                             directions.append((position, get_direction(snake.head, position)))
-                            t = Thread(target=bfs(position, exit[0], board, bad_positions, next_move, include_start=True))
+                            t = Thread(target=bfs(position, exit[0], board, bad_positions, next_move, include_start=True, boxed=True))
                             thread_pool.append(t)
 
                         for thread in thread_pool:
@@ -169,7 +169,7 @@ def move():
 
         # If we need food find a good path to said food (prioritized over attacking/boxed in when hungry)
         if food and not move:
-            logger.info("FINDING FOOD")
+            logger.info("FOOD")
             with timing("find_food", time_remaining):
                 food_positions_ratings = rate_food(snake, board, food)
                 thread_pool = []
@@ -204,7 +204,7 @@ def move():
 
         # If we don't need food, don't have the opportunity to attack, and are not boxed in then find a path to a "good" position on the board
         if not move:
-            logger.info("FINING SAFEST")
+            logger.info("SAFEST")
             with timing("find_safest_positions", time_remaining):
                 positions = find_safest_positions(snake, board, bad_positions)
                 positions = [position[0] for position in positions]
