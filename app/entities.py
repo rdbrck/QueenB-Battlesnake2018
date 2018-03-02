@@ -1,23 +1,20 @@
 from .utils import sub, add, dist
 from .constants import DIR_VECTORS, EMPTY, FOOD, SNAKE, SPOILED
 
+from copy import deepcopy
+
 
 class Snake(object):
     ATTRIBUTES = ('id', 'health', 'length')
 
-    def __init__(self, clone=None, **kwargs):
-        if clone:
-            # Clone another snake
-            self.attributes = clone.attributes.copy()
-            self.coords = clone.coords.copy()
-        else:
-            # Create a snake from a battlesnake snake dict
-            self.attributes = {k: kwargs[k] for k in Snake.ATTRIBUTES}
-            self.coords = [(p['x'], p['y']) for p in kwargs['body']['data']]
+    def __init__(self, **kwargs):
+        # Create a snake from a battlesnake snake dict
+        self.attributes = {k: kwargs[k] for k in Snake.ATTRIBUTES}
+        self.coords = [(p['x'], p['y']) for p in kwargs['body']['data']]
 
-            # remove tail from snakes that are > 2 long
-            if len(self.coords) > 2:
-                self.coords = self.coords[:-1]
+        # remove tail from snakes that are > 2 long
+        if len(self.coords) > 2:
+            self.coords = self.coords[:-1]
 
     def __len__(self):
         return self.attributes['length']
@@ -61,55 +58,34 @@ class Board(object):
     A zero cell is unoccupied. 1 is snake. 2 is food.
     """
 
-    def __init__(self, clone=None, **kwargs):
-        """
-        Conceptually, grid is indexed as board[x][y], that is, the board is in column-major layout.
-        """
-        if clone:
-            # Clone another board
-            self.width = clone.width
-            self.height = clone.height
-            self.start_index = clone.start_index
-            self.cells = []
-            self.meta_cells = []
-            self.own_snake_id = clone.own_snake_id
+    def __init__(self, **kwargs):
+        # Initialize a board from a battlesnake gamestate dict
+        self.width = kwargs['width']
+        self.height = kwargs['height']
+        self.start_index = 0
+        self.cells = []
+        self.meta_cells = []
+        self.own_snake_id = kwargs['you']['id']
 
-            for x in range(self.width):
-                self.cells.append(clone.cells[x].copy())
-                self.meta_cells.append(clone.meta_cells[x].copy())
+        for x in range(self.width):
+            self.cells.append([EMPTY] * self.height)
+            self.meta_cells.append([None] * self.height)
 
-            self.snakes = [Snake(s) for s in clone.snakes]
-            self.enemies = [Snake(s) for s in clone.enemies]
-            self.food = clone.food.copy()
+        # Only take snakes that are alive
+        self.snakes = [Snake(**s) for s in kwargs['snakes']['data']]
+        self.enemies = [deepcopy(s) for s in self.snakes if s.attributes['id'] != self.own_snake_id]
+        self.food = [(p['x'], p['y']) for p in kwargs['food']['data']]
 
-        else:
-            # Initialize a board from a battlesnake gamestate dict
-            self.width = kwargs['width']
-            self.height = kwargs['height']
-            self.start_index = 0
-            self.cells = []
-            self.meta_cells = []
-            self.own_snake_id = kwargs['you']['id']
+        # Fill out initially occupied cells on board
+        for snake in self.snakes:
+            for pos in snake.coords:
+                self.set_cell(pos, SNAKE)
 
-            for x in range(self.width):
-                self.cells.append([EMPTY] * self.height)
-                self.meta_cells.append([None] * self.height)
-
-            # Only take snakes that are alive
-            self.snakes = [Snake(**s) for s in kwargs['snakes']['data']]
-            self.enemies = [Snake(clone=s) for s in self.snakes if s.attributes['id'] != self.own_snake_id]
-            self.food = [(p['x'], p['y']) for p in kwargs['food']['data']]
-
-            # Fill out initially occupied cells on board
-            for snake in self.snakes:
-                for pos in snake.coords:
-                    self.set_cell(pos, SNAKE)
-
-            for fud in self.food:
-                if self._contested_food(fud, kwargs['you']['id']):
-                    self.set_cell(fud, FOOD)
-                else:
-                    self.set_cell(fud, SPOILED)
+        for fud in self.food:
+            if self._contested_food(fud, kwargs['you']['id']):
+                self.set_cell(fud, FOOD)
+            else:
+                self.set_cell(fud, SPOILED)
 
     def _contested_food(self, pos, snake_id):
         current_snake = self.snakes[0]

@@ -8,6 +8,7 @@ from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_T
 
 from functools import reduce
 from threading import Thread
+from copy import deepcopy
 import bottle
 import logging
 import traceback
@@ -63,7 +64,7 @@ def move():
     try:
         # Get spots that an enemy snake could move into and also set snakes that are guaranteed to die as empty squares
         with timing("setup board and gather data", time_remaining):
-            initial_floodfill_board = Board(clone=board)
+            initial_floodfill_board = deepcopy(board)
 
             for enemy in board.enemies:
                 enemy_options = available_next_positions(board, enemy)
@@ -248,7 +249,7 @@ def move():
         if not move:
             logger.info("FALLBACK")
             with timing("floodfill fallback", time_remaining):
-                temp_board = Board(clone=board)
+                temp_board = deepcopy(board)
                 for pos in potential_snake_positions:
                     temp_board.set_cell(pos, SNAKE)
 
