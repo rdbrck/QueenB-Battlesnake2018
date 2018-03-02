@@ -116,10 +116,12 @@ def move():
 
         # If we have the opportunity to attack and are not starving then attack
         if attack and not DISABLE_ATTACKING and (snake.attributes['health'] > FOOD_HUNGRY_HEALTH or not food):
+            logger.info("ATTACKING")
             move = get_direction(snake.head, attack)
 
         # if we are boxed in, not attacking, and are in good health then we need to find an exit and max our movement
         if boxed_in and not move and (snake.attributes['health'] > FOOD_BOXED_IN_HEALTH or not food_in_box(flood_fill(board, snake.head, True), board)):
+            logger.info("BOXED IN")
             with timing("boxed_in", time_remaining):
                 # get the flooded squares
                 flooded_squares = flood_fill(board, snake.head, True)
@@ -167,6 +169,7 @@ def move():
 
         # If we need food find a good path to said food (prioritized over attacking/boxed in when hungry)
         if food and not move:
+            logger.info("FINDING FOOD")
             with timing("find_food", time_remaining):
                 food_positions_ratings = rate_food(snake, board, food)
                 thread_pool = []
@@ -201,6 +204,7 @@ def move():
 
         # If we don't need food, don't have the opportunity to attack, and are not boxed in then find a path to a "good" position on the board
         if not move:
+            logger.info("FINING SAFEST")
             with timing("find_safest_positions", time_remaining):
                 positions = find_safest_positions(snake, board, bad_positions)
                 positions = [position[0] for position in positions]
@@ -226,7 +230,7 @@ def move():
     try:
         # If code above failed then fallback to a floodfill style move
         if not move:
-            logger.info("CHANGED MOVE - floodfill fallback.")
+            logger.info("FALLBACK")
             with timing("floodfill fallback", time_remaining):
                 temp_board = Board(clone=board)
                 for pos in potential_snake_positions:
