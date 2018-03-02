@@ -141,35 +141,31 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
     found_path = False
     board_copy = Board(clone=board)
 
+    # We want to avoid going along the wall if possible. Make new board that excludes the outside
+    small_board = Board(clone=board_copy)
+    small_board.height = small_board.height - 1
+    small_board.width = small_board.width - 1
+    small_board.start_index = 1
+
     if not next_to_wall(starting_position, board_copy) and not next_to_wall(target_position, board_copy) and not boxed:
-        # We want to avoid going along the wall if possible. Make new board that excludes the outside
-        small_board = Board(clone=board_copy)
-        small_board.height = small_board.height - 1
-        small_board.width = small_board.width - 1
-        small_board.start_index = 1
-
-        surrounding_points = surrounding(starting_position)
-
         # Try and allow going along small_board's wall if we can loop back around
         # due to having an escape route next to the normal board's wall
         for point in exclude:
-            if small_board.outside(point):
-                continue
-
-            for surrounding_point in surrounding_points:
-                # Check if the point to exclude is one square away from our head (i.e we could potentially collide next turn)
-                if point == surrounding_point and small_board.get_cell(point) != SNAKE:
-                    # Found a potential collision next turn.
-                    if next_to_wall(point, small_board):
-                        # We have a one space gap between our head and the real game board wall
-                        # Only exclude this exclude point if the space between us and the real wall isn't empty. Otherwise we can
-                        # still escape by looping back
-                        for neighbour_point in neighbours(point):
-                            if next_to_wall(neighbour_point, board_copy) and (board_copy.get_cell(neighbour_point) == SNAKE or neighbour_point in exclude):
-                                small_board.set_cell(point, SNAKE)
-                    else:
-                        # Not near a wall so we should exclude this point, as it is a possible collision point
-                        small_board.set_cell(point, SNAKE)
+            if small_board.inside(point):
+                for surrounding_point in surrounding(starting_position):
+                    # Check if the point to exclude is one square away from our head (i.e we could potentially collide next turn)
+                    if point == surrounding_point and small_board.get_cell(point) != SNAKE:
+                        # Found a potential collision next turn.
+                        if next_to_wall(point, small_board):
+                            # We have a one space gap between our head and the real game board wall
+                            # Only exclude this exclude point if the space between us and the real wall isn't empty. Otherwise we can
+                            # still escape by looping back
+                            for neighbour_point in neighbours(point):
+                                if next_to_wall(neighbour_point, board_copy) and (board_copy.get_cell(neighbour_point) == SNAKE):
+                                    small_board.set_cell(point, SNAKE)
+                        else:
+                            # Not near a wall so we should exclude this point, as it is a possible collision point
+                            small_board.set_cell(point, SNAKE)
         found_path = _find_paths(starting_position, target_position, small_board, return_list, include_start)
 
     if not found_path:
