@@ -448,7 +448,6 @@ class TestAvoidanceLogic(unittest.TestCase):
         unless Snake C does something stupid, death is inevitable on the right
         dead-end. (The naive choice is the right dead-end because it's longer.)
         """
-
         data = TestGameData()
         data.set_dimensions(10, 4)
         data.set_self([(5, 0), (5, 1)])
@@ -468,7 +467,6 @@ class TestAvoidanceLogic(unittest.TestCase):
         ....b.c...
         ....b.c...
         """
-
         data = TestGameData()
         data.set_dimensions(10, 4)
         data.set_self([(5, 0), (5, 1)])
@@ -478,34 +476,14 @@ class TestAvoidanceLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE, json=data.data)
         self.assertEqual(response.json()['move'], 'left')
 
-    def test_2nd_snake_death_escape_not_starved(self):
-        """
-        Test dead-end escape via 2nd snake death due to starving, but there will get food.
-
-        ..Bb.X..cC
-        ...bbxccc.
-        ....b.c...
-        ....b.c...
-        """
-
-        data = TestGameData()
-        data.set_dimensions(10, 4)
-        data.set_self([(5, 0), (5, 1)])
-        data.add_enemy([(2, 0), (3, 0), (3, 1), (4, 1), (4, 2), (4, 3)], health=0)
-        data.add_enemy([(9, 0), (8, 0), (8, 1), (7, 1), (6, 1), (6, 2), (6, 3)])
-        data.set_food([(1, 0)])
-
-        response = requests.post(TEST_INSTANCE, json=data.data)
-        self.assertEqual(response.json()['move'], 'right')
-
     def test_avoid_wall_when_snake_next_to_ourself(self):
-        """If we are two away from the wall but next to a snake, chose to go up
+        """
+        If we are two away from the wall but next to a snake, chose to go up
         against the snake rather than the wall to maintain an exit route
         """
-
         data = TestGameData()
         data.set_dimensions(17, 17)
-        data.set_food([(6, 0), (11, 0), (1, 1), (0, 13), (5, 16), (5, 15), (6, 15), (15, 13), (16, 11), (12, 10)])
+        data.set_food([(6, 0), (11, 0), (1, 1), (0, 13), (5, 16), (5, 15), (6, 15), (12, 10)])
         data.set_self([
             (15, 12), (14, 12), (13, 12), (12, 12), (11, 12), (10, 12), (9, 12), (8, 12), (7, 12),
             (6, 12), (5, 12), (4, 12), (3, 12), (2, 12), (1, 12), (0, 12), (0, 11), (0, 10), (0, 9)
