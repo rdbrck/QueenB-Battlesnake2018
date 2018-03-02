@@ -107,42 +107,42 @@ def rate_food(snake, board, board_food):
 
 
 def bfs(starting_position, target_position, board, exclude, return_list, include_start=False, boxed=False):
-    def find_paths(starting_position, target_position, fp_board):
-        def loop_through_queue(ltq_queue):
-            def get_path_from_nodes(gpfn_node):
+    def _find_paths(starting_position, target_position, _fp_board):
+        def _loop_through_queue(_ltq_queue):
+            def _get_path_from_nodes(_gpfn_node):
                 path = []
-                while(gpfn_node):
-                    path.insert(0, (gpfn_node[0], gpfn_node[1]))
-                    gpfn_node = gpfn_node[2]
+                while(_gpfn_node):
+                    path.insert(0, (_gpfn_node[0], _gpfn_node[1]))
+                    _gpfn_node = _gpfn_node[2]
                 if not include_start:
                     path = path[1:]
 
                 return_list.append(path)
                 return True
 
-            # ----- loop_through_queue ----- #
+            # ----- _loop_through_queue ----- #
             ltq_found_path = False
-            while len(ltq_queue) > 0:
-                node = ltq_queue.popleft()
+            while len(_ltq_queue) > 0:
+                node = _ltq_queue.popleft()
                 x = node[0]
                 y = node[1]
 
                 if (x, y) == target_position:  # If we reach target_position
                     ltq_found_path = True
-                    get_path_from_nodes(node)  # Rebuild path
+                    _get_path_from_nodes(node)  # Rebuild path
                     continue
 
-                if fp_board.get_cell((x, y)) == SNAKE and not (x, y) == starting_position:
+                if _fp_board.get_cell((x, y)) == SNAKE and not (x, y) == starting_position:
                     continue
 
-                fp_board.set_cell((x, y), SNAKE)  # Mark as explored
+                _fp_board.set_cell((x, y), SNAKE)  # Mark as explored
 
                 for i in neighbours(node):
-                    if fp_board.inside((i[0], i[1])):
-                        ltq_queue.append((i[0], i[1], node))
+                    if _fp_board.inside((i[0], i[1])):
+                        _ltq_queue.append((i[0], i[1], node))
             return ltq_found_path
 
-        # ----- find_paths ----- #
+        # ----- _find_paths ----- #
         fp_found_path = False
         # First try and find a path to the target that immidiatly leads us away from the wall
         if next_to_wall(starting_position, board):
@@ -150,11 +150,11 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
             for i in neighbours(starting_position):
                 if board.inside(i) and not next_to_wall(i, board):
                     queue.append((i[0], i[1], (starting_position[0], starting_position[1], None)))
-            fp_found_path = loop_through_queue(queue)
+            fp_found_path = _loop_through_queue(queue)
 
         if not found_path:
             queue = deque([(starting_position[0], starting_position[1], None)])
-            fp_found_path = loop_through_queue(queue)
+            fp_found_path = _loop_through_queue(queue)
 
         return fp_found_path  # No path
 
@@ -189,12 +189,12 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
                     for neighbour_point in surrounding(point):
                         if next_to_wall(neighbour_point, board_copy) and (board_copy.get_cell(neighbour_point) == SNAKE or neighbour_point in exclude):
                             small_board.set_cell(point, SNAKE)
-        found_path = find_paths(starting_position, target_position, small_board)
+        found_path = _find_paths(starting_position, target_position, small_board)
 
     if not found_path:
         for point in exclude:
             board_copy.set_cell(point, SNAKE)
-        find_paths(starting_position, target_position, board_copy)
+        _find_paths(starting_position, target_position, board_copy)
     return
 
 
