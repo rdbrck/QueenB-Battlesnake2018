@@ -58,11 +58,14 @@ def need_food(board, bad_positions, snake):
     if not potential_food:
         return None
 
-    # get food that is not next to wall so we can potentially ignore food that is enxt to wall
+    # get food that is not next to wall so we can potentially ignore food that is next to wall
     no_wall_food = []
     for fud in potential_food:
         if not next_to_wall(fud, board) or snake.attributes['health'] < FOOD_HUNGRY_WALL_HEALTH:
             no_wall_food.append(fud)
+
+    if len(no_wall_food) == 0 and snake.attributes['health'] > FOOD_HUNGRY_WALL_HEALTH:
+        return None
 
     # remove food that puts us in a bad_position
     food_to_get = []
