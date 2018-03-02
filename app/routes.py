@@ -215,6 +215,8 @@ def move():
                     t = Thread(target=bfs(snake.head, position, board, bad_positions, next_move))
                     thread_pool.append(t)
 
+                # t = Thread(target=bfs(snake.head, positions[0], board, bad_positions, next_move))
+                # thread_pool.append(t)
                 for thread in thread_pool:
                     thread.start()
                     thread.join()

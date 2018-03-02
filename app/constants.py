@@ -3,8 +3,8 @@ import random
 import logging
 
 SNAKE_NAME = "Rubber Ducky"
-SNAKE_COLOR = "#ff0000"
-SNAKE_SECONDARY_COLOR = "#ff0000"
+SNAKE_COLOR = "#e6e600"
+SNAKE_SECONDARY_COLOR = "#e6e600"
 SNAKE_IMAGE = "duck.jpg"
 SNAKE_HEAD = "safe"
 SNAKE_TAIL = "freckled"
