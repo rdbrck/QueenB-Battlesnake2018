@@ -63,7 +63,7 @@ FOOD_STEAL_DIST = 3  # If we are within close/medium dist to a food and an enemy
 FOOD_BOXED_IN_HEALTH = 25  # if we are boxed in and below this value in health then prioritize food
 
 DISABLE_ATTACKING = False  # Set to True to disable attack logic
-DISABLE_STEALING = True  # Set to True to disable food stealing
+DISABLE_STEALING = False  # Set to True to disable food stealing
 
 SAFE_SPACE_FACTOR = 2
 TAIL_PREFERENCE_FACTOR = 1.5
