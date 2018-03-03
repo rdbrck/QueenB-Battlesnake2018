@@ -1,0 +1,34 @@
+upstream _battlesnake {
+    server unix:/run/uwsgi/app/battlesnake/socket;
+}
+
+server {
+    listen [::]:80 default_server;
+    listen 80 default_server;
+    server_name battlesnake.conradfoucher.com;
+
+    root /var/www/battlesnake2018;
+
+    location /static/ {
+        autoindex off;
+        try_files $uri =444;
+    }
+
+    location = /start {
+        include uwsgi_params;
+        uwsgi_pass _battlesnake;
+    }
+
+    location = /move {
+        include uwsgi_params;
+        uwsgi_pass _battlesnake;
+    }
+
+    location = /end {
+        return 200 OK;
+    }
+
+    location / {
+        return 444;
+    }
+}

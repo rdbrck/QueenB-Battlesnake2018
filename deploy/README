@@ -1,0 +1,11 @@
+# Deployment
+
+On the server,
+
+```
+sudo deploy.sh
+```
+
+Set `REPO` and `BRANCH` in the environment
+if you want a different git repository
+or a branch other than master.
