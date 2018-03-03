@@ -111,7 +111,7 @@ class TestAvoidanceLogic(unittest.TestCase):
 
     def test_avoid_moving_into_possible_cut_off_trap(self):
         """ do not move into a tunnel that could easily become a trap """
-        data = TestGameData()   
+        data = TestGameData()
         data.set_self([(0, 3), (1, 3), (2, 3)], health=10)
         data.add_enemy([(1, 6), (1, 5), (1, 4), (2, 4), (3, 4)])
 
@@ -266,11 +266,11 @@ class TestAvoidanceLogic(unittest.TestCase):
     def test_if_two_dead_ends_choose_one_with_tail_no_food(self):
         """ only options are dead ends, don't go for bait, choose one with tail """
         data = TestGameData()
-        data.set_self([(4, 4), (4, 3), (4, 2), (4, 1), (4, 0), 
-                       (3, 0), (2, 0), (1, 0), (0, 0), 
-                       (0, 1), (0, 2), (0, 3), (0, 4), (0, 5), 
-                       (1, 5), (2, 5), (3, 5), (4, 5), (5, 5), 
-                       (6, 5), (7, 5), (8, 5), (8, 4), (8, 3), 
+        data.set_self([(4, 4), (4, 3), (4, 2), (4, 1), (4, 0),
+                       (3, 0), (2, 0), (1, 0), (0, 0),
+                       (0, 1), (0, 2), (0, 3), (0, 4), (0, 5),
+                       (1, 5), (2, 5), (3, 5), (4, 5), (5, 5),
+                       (6, 5), (7, 5), (8, 5), (8, 4), (8, 3),
                        (8, 2), (8, 1), (8, 0), (7, 0), (6, 0)
                        ], health=20)
 
@@ -280,11 +280,11 @@ class TestAvoidanceLogic(unittest.TestCase):
     def test_if_two_dead_ends_choose_one_with_tail_food(self):
         """ only options are dead ends, don't go for bait, choose one with tail """
         data = TestGameData()
-        data.set_self([(4, 4), (4, 3), (4, 2), (4, 1), (4, 0), 
-                       (3, 0), (2, 0), (1, 0), (0, 0), 
-                       (0, 1), (0, 2), (0, 3), (0, 4), (0, 5), 
-                       (1, 5), (2, 5), (3, 5), (4, 5), (5, 5), 
-                       (6, 5), (7, 5), (8, 5), (8, 4), (8, 3), 
+        data.set_self([(4, 4), (4, 3), (4, 2), (4, 1), (4, 0),
+                       (3, 0), (2, 0), (1, 0), (0, 0),
+                       (0, 1), (0, 2), (0, 3), (0, 4), (0, 5),
+                       (1, 5), (2, 5), (3, 5), (4, 5), (5, 5),
+                       (6, 5), (7, 5), (8, 5), (8, 4), (8, 3),
                        (8, 2), (8, 1), (8, 0), (7, 0), (6, 0)
                        ], health=20)
         data.set_food([(1, 1)])
@@ -344,10 +344,10 @@ class TestAvoidanceLogic(unittest.TestCase):
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertEqual(response.json()['move'], 'right')
 
-    #The four boxed in tests demonstrate our max area when executing the longest_path method for boxed_in (NPHard)
+    # The four boxed in tests demonstrate our max area when executing the longest_path method for boxed_in (NPHard)
     def test_boxed_in_10(self):
         """ If we only use the NP Hard boxed in then this will pass as it is below the execution time barrier """
-        data = TestGameData()   
+        data = TestGameData()
         data.set_dimensions(2, 7)
         data.set_self([(0, 2), (0, 1), (1, 1), (1, 0), (0, 0), (0, 0)])
 
@@ -360,7 +360,7 @@ class TestAvoidanceLogic(unittest.TestCase):
 
     def test_boxed_in_20(self):
         """ If we only use the NP Hard boxed in then this will pass as it is below the execution time barrier """
-        data = TestGameData()   
+        data = TestGameData()
         data.set_dimensions(4, 7)
         data.set_self([(0, 2), (0, 1), (1, 1), (2, 1), (3, 1), (3, 0), (2, 0), (1, 0), (0, 0), (0, 0)])
 
@@ -373,7 +373,7 @@ class TestAvoidanceLogic(unittest.TestCase):
 
     def test_boxed_in_25(self):
         """ If we only use the NP Hard boxed in then this will fail as it exceeds the execution time """
-        data = TestGameData()   
+        data = TestGameData()
         data.set_dimensions(5, 7)
         data.set_self(
             [
@@ -391,7 +391,7 @@ class TestAvoidanceLogic(unittest.TestCase):
 
     def test_boxed_in_30(self):
         """ If we only use the NP Hard boxed in then this will fail as it exceeds the execution time """
-        data = TestGameData()   
+        data = TestGameData()
         data.set_dimensions(6, 8)
         data.set_self(
             [
@@ -408,7 +408,7 @@ class TestAvoidanceLogic(unittest.TestCase):
         self.assertEqual(response.json()['move'], 'down')
 
     def test_boxed_in_none(self):
-        data = TestGameData()   
+        data = TestGameData()
         data.set_dimensions(15, 15)
         data.set_self(
             [
@@ -444,7 +444,7 @@ class TestAvoidanceLogic(unittest.TestCase):
         Snake B and Snake C create dead-ends for us (Snake X).
         The right dead-end caused by C is longer than the left dead-end caused
         by B, but we know that Snake B is about to die and so an escape route
-        is about to appear on the left dead-end before it kills us, whereas 
+        is about to appear on the left dead-end before it kills us, whereas
         unless Snake C does something stupid, death is inevitable on the right
         dead-end. (The naive choice is the right dead-end because it's longer.)
         """
@@ -478,7 +478,7 @@ class TestAvoidanceLogic(unittest.TestCase):
 
     def test_avoid_wall_when_snake_next_to_ourself(self):
         """
-        If we are two away from the wall but next to a snake, chose to go up
+        If we are two away from the wall but next to a snake, choose to go up
         against the snake rather than the wall to maintain an exit route
         """
         data = TestGameData()
@@ -492,3 +492,14 @@ class TestAvoidanceLogic(unittest.TestCase):
 
         response = requests.post(TEST_INSTANCE, json=data.data)
         self.assertEqual(response.json()['move'], 'up')
+
+    def test_move_away_from_wall_if_possible(self):
+        """
+        If we are against the wall, but there is a good path to our target point that doesn't use the wall, use it.
+        """
+        data = TestGameData()
+        data.set_dimensions(17, 17)
+        data.set_food([(6, 0)])
+        data.set_self([(16, 9), (16, 8), (15, 8), (14, 8)])
+        response = requests.post(TEST_INSTANCE, json=data.data)
+        self.assertEqual(response.json()['move'], 'left')
