@@ -174,7 +174,7 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
             if small_board.outside(point):
                 continue
 
-            if not next_to_wall(point, small_board):
+            if not next_to_wall(point, small_board) or point in neighbours(starting_position):
                 small_board.set_cell(point, SNAKE)
                 continue
 
