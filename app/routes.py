@@ -1,5 +1,5 @@
 from .entities import Board
-from .strategy import need_food, check_attack
+from .strategy import need_food, check_attack, detect_wall_tunnels
 from .utils import timing, get_direction, add, neighbours, touching, food_in_box, available_next_positions
 from .algorithms import bfs, find_safest_positions, rate_food, flood_fill, rate_cell, longest_path
 from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS, FOOD_BOXED_IN_HEALTH,\
@@ -7,6 +7,7 @@ from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_T
                        SNAKE, FOOD, SPOILED, EMPTY
 
 from threading import Thread
+from copy import deepcopy
 import bottle
 import logging
 import traceback
@@ -62,15 +63,28 @@ def move():
     try:
         # Get spots that an enemy snake could move into and also set snakes that are guaranteed to die as empty squares
         with timing("setup board and gather data", time_remaining):
-            for enemy_snake in board.snakes:
-                if enemy_snake.attributes['id'] != snake.attributes['id']:
-                    enemy_options = available_next_positions(board, enemy_snake)
-                    if (len(enemy_options) == 0 and snake.head not in neighbours(enemy_snake.head)) or enemy_snake.attributes['health'] == 0:
-                        for pos in enemy_snake.coords:
-                            board.set_cell(pos, EMPTY)
-                        continue
+            initial_floodfill_board = deepcopy(board)
 
-                    potential_snake_positions.extend(enemy_options)
+            for enemy in board.enemies:
+                enemy_options = available_next_positions(board, enemy)
+                if (len(enemy_options) == 0 and snake.head not in neighbours(enemy.head)) or enemy.attributes['health'] == 0:
+                    for pos in enemy.coords:
+                        board.set_cell(pos, EMPTY)
+                        initial_floodfill_board.set_cell(pos, EMPTY)
+                    continue
+
+                potential_snake_positions.extend(enemy_options)
+
+                # floodfill in each direction with potential attack positions so we don't
+                # do something dumb (predicts dead ends that can be seen next turn)
+                for pos in enemy_options:
+                    if pos not in neighbours(snake.head) or enemy.attributes['length'] >= snake.attributes['length']:
+                        initial_floodfill_board.set_cell(pos, SNAKE)
+
+        with timing("detect dangerous tunnels against walls (snake head at other end)", time_remaining):
+            bad_positions.extend(detect_wall_tunnels(board))
+            for pos in bad_positions:
+                initial_floodfill_board.set_cell(pos, SNAKE)
 
         # Flood fill in each direction to find bad directions
         with timing("intial flood fill detection", time_remaining):
@@ -80,7 +94,10 @@ def move():
             # Get size of space we can safely move into (should be larger than body size)
             safe_space_size = snake.attributes.get('length') * SAFE_SPACE_FACTOR
             for pos in available_next_positions(board, snake):
-                flooded_squares = flood_fill(board, pos, False)
+                if pos in bad_positions:
+                    continue
+
+                flooded_squares = flood_fill(initial_floodfill_board, pos, False)
                 square_count = len(flooded_squares)
                 number_of_squares.append([pos, square_count, any(x in neighbours(snake.head) for x in flooded_squares)])
                 if square_count <= safe_space_size:
@@ -122,8 +139,8 @@ def move():
         if boxed_in and not move and (snake.attributes['health'] > FOOD_BOXED_IN_HEALTH or not food_in_box(flood_fill(board, snake.head, True), board)):
             logger.info("BOXED IN")
             with timing("boxed_in", time_remaining):
-                # get the flooded squares
-                flooded_squares = flood_fill(board, snake.head, True)
+                # get the flooded squares of the inital floodfill board as that signifies boxed_in
+                flooded_squares = flood_fill(initial_floodfill_board, snake.head, True)
                 exit = None
 
                 # loop through all snakes starting from tail and check if adjacent to flood choose closest that will be available by the time we get there
@@ -231,7 +248,7 @@ def move():
         if not move:
             logger.info("FALLBACK")
             with timing("floodfill fallback", time_remaining):
-                temp_board = Board(clone=board)
+                temp_board = deepcopy(board)
                 for pos in potential_snake_positions:
                     temp_board.set_cell(pos, SNAKE)
 

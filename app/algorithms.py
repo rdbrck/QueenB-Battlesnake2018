@@ -75,7 +75,7 @@ def _touching_flood(flood, pos):
 
 def find_safest_positions(snake, board, bad_positions):
     # account for bad_positions
-    temp_board = Board(clone=board)
+    temp_board = deepcopy(board)
     for pos in bad_positions:
         temp_board.set_cell(pos, SNAKE)
 
@@ -215,7 +215,7 @@ def longest_path(starting_position, target_position, board, exclude):
 
         return highest
 
-    board_copy = Board(clone=board)
+    board_copy = deepcopy(board)
     board_copy.set_cell(starting_position, EMPTY)
 
     for excluded_point in exclude:

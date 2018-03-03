@@ -1,4 +1,4 @@
-from .utils import dist, neighbours, sub, get_directions, get_next_from_direction, next_to_wall, available_next_positions
+from .utils import dist, neighbours, sub, add, get_directions, get_next_from_direction, next_to_wall, available_next_positions, touching
 from .constants import FOOD_CLOSE_HEALTH, FOOD_CLOSE_DIST, FOOD_MEDIUM_HEALTH, FOOD_MEDIUM_DIST, FOOD_HUNGRY_HEALTH, SPOILED, SNAKE, DISABLE_STEALING,\
                        FOOD_DANGEROUS_HEALTH, FOOD_DANGEROUS_DIST, FOOD_STEAL_DIST, \
                        FOOD_HUNGRY_WALL_HEALTH
@@ -31,8 +31,8 @@ def need_food(board, bad_positions, snake):
 
         # check if enemy is approaching food we are close to
         steal = False
-        for enemy in board.snakes:
-            if enemy.attributes['id'] != snake.attributes['id'] and dist(enemy.head, food) <= FOOD_MEDIUM_DIST + FOOD_STEAL_DIST:
+        for enemy in board.enemies:
+            if dist(enemy.head, food) <= FOOD_MEDIUM_DIST + FOOD_STEAL_DIST:
                 steal = True and not DISABLE_STEALING
                 break
 
@@ -99,11 +99,10 @@ def _same_direction(snake_a, snake_b):
 def check_attack(board, bad_positions, snake):
     """ Determines if we have the opportunity to attack - doesn't seek out attacking but will attack given the opportunity """
     possible_attacks = []
-    enemy_snakes = [enemy for enemy in board.snakes if enemy.attributes['id'] != snake.attributes['id']]
     available_moves = available_next_positions(board, snake)
 
     # attack potential position that enemy would move into unless we are tailing their head
-    for enemy in enemy_snakes:
+    for enemy in board.enemies:
         possible_attacks.extend([
             pos for pos in available_next_positions(board, enemy) if pos in available_moves
             and not (_touching_body(snake, enemy) and _same_direction(snake, enemy))
@@ -113,7 +112,7 @@ def check_attack(board, bad_positions, snake):
     possible_attacks = list(set(possible_attacks))
 
     # add potential attack positions where enemy snake is between us and a wall or another snake
-    for enemy in enemy_snakes:
+    for enemy in board.enemies:
         # although generic, we can ignore snakes that don't pass these
         if not _touching_body(enemy, snake) or not _same_direction(enemy, snake):
             continue
@@ -150,7 +149,7 @@ def check_attack(board, bad_positions, snake):
                     possible_attacks.append((snake.head[0], snake.head[1] + direction[1]))
 
     # remove possible attack spots where the enemy snake is equal in size or bigger
-    for enemy in enemy_snakes:
+    for enemy in board.enemies:
         if enemy.attributes['length'] < snake.attributes['length']:
             continue
 
@@ -166,3 +165,39 @@ def check_attack(board, bad_positions, snake):
     # I don't know why this would happen but we will add it anyways
     possible_attacks = [pos for pos in possible_attacks if board.inside(pos)]
     return (possible_attacks[0] if len(possible_attacks) > 0 else None)
+
+
+def detect_wall_tunnels(board):
+    tunnel_ends = []
+
+    for enemy in board.enemies:
+        # if the head of the enemy is not near a wall skip it
+        if enemy.head[0] not in [1, board.width-2] and enemy.head[1] not in [1, board.height-2]:
+            continue
+
+        # if the enemy snake is not moving perpendicular to the wall skip it
+        if abs(enemy.coords[1][0] - enemy.head[0]) != 1 and abs(enemy.coords[1][1] - enemy.head[1]) != 1:
+            continue
+
+        # get opposite of enemies last move (1, 0) (-1, 0) (0, 1) (0, -1)
+        direction = sub(enemy.coords[1], enemy.coords[0])
+
+        # get end of tunnel (by enemy head)
+        if direction[0] == 0:
+            end = (0 if enemy.head[0] == 1 else board.width-1, enemy.head[1])
+        else:
+            end = (enemy.head[0], 0 if enemy.head[1] == 1 else board.height-1)
+ 
+        # starting from end apply opposite direction until not touching snake
+        previous = None
+        while any(touching(end, pos) for pos in enemy.coords) and board.inside(end) and board.get_cell(end) != SNAKE:
+            previous = end
+            end = add(end, direction)
+
+        # if edge of board was reached ebfore finding end of tunnel then skip snake
+        if board.outside(end) or board.get_cell(end) == SNAKE or not previous:
+            continue
+
+        tunnel_ends.append(previous)
+
+    return tunnel_ends
