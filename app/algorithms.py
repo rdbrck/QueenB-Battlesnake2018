@@ -78,7 +78,7 @@ def _touching_flood(flood, pos):
 
 def find_safest_positions(snake, board, bad_positions):
     # account for bad_positions
-    temp_board = Board(clone=board)
+    temp_board = deepcopy(board)
     for pos in bad_positions:
         temp_board.set_cell(pos, SNAKE)
 
@@ -139,11 +139,11 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
         return False  # No path
 
     found_path = False
-    board_copy = Board(clone=board)
+    board_copy = deepcopy(board)
 
     if not next_to_wall(starting_position, board_copy) and not next_to_wall(target_position, board_copy) and not boxed:
         # We want to avoid going along the wall if possible. Make new board that excludes the outside
-        small_board = Board(clone=board_copy)
+        small_board = deepcopy(board_copy)
         small_board.height = small_board.height - 1
         small_board.width = small_board.width - 1
         small_board.start_index = 1
@@ -197,7 +197,7 @@ def longest_path(starting_position, target_position, board, exclude):
 
         return highest
 
-    board_copy = Board(clone=board)
+    board_copy = deepcopy(board)
     board_copy.set_cell(starting_position, EMPTY)
 
     for excluded_point in exclude:

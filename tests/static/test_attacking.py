@@ -110,7 +110,7 @@ class TestAttackLogic(unittest.TestCase):
         data = TestGameData()
         data.set_self(
             [
-                (17, 8), (17, 7), (16, 7), (15, 7), (15, 6), (15, 5), (15, 4), (14, 4), (13, 4), (12, 4), (11, 4),
+                (17, 8), (17, 7), (16, 7), (15, 7), (15, 6), (15, 5), (15, 4), (14, 4), (13, 4),(12, 4), (11, 4),
                 (10, 4), (9, 4), (8, 4), (7, 4), (6, 4), (5, 4), (4, 4), (4, 5), (4, 6), (3, 6), (2, 6), (1, 6), (1, 7),
                 (2, 7), (3, 7), (3, 8), (3, 9), (3, 10), (3, 11), (3, 12), (3, 13), (4, 13), (4, 14), (4, 15), (5, 15),
                 (5, 16), (6, 16), (7, 16), (8, 16), (9, 16), (10, 16), (10, 15), (11, 15), (11, 14), (12, 14), (12, 15),
@@ -131,3 +131,16 @@ class TestAttackLogic(unittest.TestCase):
 
         response = requests.post(TEST_INSTANCE,  json=data.data)
         self.assertTrue(response.json()['move'] != 'left')
+
+    def test_dont_attack_into_this_particular_case(self):
+        data = TestGameData()
+        data.set_self(
+            [
+                (5, 10), (4, 10), (3, 10), (2, 10), (2, 9), (3, 9), (3, 8), (4, 8), (4, 7), (4, 6), (4, 5), (4, 4), (4, 3),
+                (5, 3), (5, 4), (5, 5), (5, 6), (5, 7), (5, 8)
+            ]
+        )
+        data.add_enemy([(6, 9), (6, 10), (7, 10), (7, 9), (8, 9), (8, 8), (8, 7), (8, 6), (8, 5), (8, 4), (9, 4), (10, 4)])
+
+        response = requests.post(TEST_INSTANCE,  json=data.data)
+        self.assertTrue(response.json()['move'] != 'up')
