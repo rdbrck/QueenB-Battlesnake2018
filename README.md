@@ -32,13 +32,27 @@ docker-compose build
 docker-compose up
 ```
 
+#### Dev Helpers
+
+A Makefile is provided to ease tasks. Set up the virtualenv first.
+
+```
+# install dependencies
+make bootstrap
+
+# run static tests
+make test-static
+
+# clean, lint, test
+make test
+```
+
 #### Local
 
 A virtualenv is suggested when installing python requirements, although it's not required.
 ```
 python3 -m venv .venv
-.venv/bin/activate
-
+. .venv/bin/activate
 ```
 
 Install dependencies using [pip](https://pip.pypa.io/en/latest/installing.html):
