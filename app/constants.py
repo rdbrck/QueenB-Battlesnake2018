@@ -95,3 +95,9 @@ ENEMY_RATING = -2
 OUT_SIDE_BOARD_RATING = -3
 
 LOG_LEVEL = logging.DEBUG
+
+# Allows us to override from app/config.py file
+try:
+    from .config import *
+except ModuleNotFoundError:
+    pass
