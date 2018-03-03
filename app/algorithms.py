@@ -1,12 +1,9 @@
-from .utils import neighbours, surrounding, sub, dist, touching, next_to_wall, available_next_positions
+from .utils import neighbours, surrounding, dist, touching, next_to_wall
 from .entities import Board
-from .constants import DIR_NAMES, DIR_VECTORS, SNAKE, EMPTY, FOOD, SPOILED, SAFE_SPACE_FACTOR,\
+from .constants import SNAKE, EMPTY, FOOD, SPOILED, SAFE_SPACE_FACTOR,\
                        FOOD_RATING, SPOILED_RATING, EMPTY_RATING, BODY_RATING, ENEMY_RATING, OUT_SIDE_BOARD_RATING
 
-import time
-import random
 from functools import reduce
-from math import floor
 from copy import deepcopy
 from collections import deque
 
@@ -160,11 +157,11 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
 
     # ----- bfs ----- #
     found_path = False
-    board_copy = Board(clone=board)
+    board_copy = deepcopy(board)
 
     if not next_to_wall(starting_position, board_copy) and not next_to_wall(target_position, board_copy) and not boxed:
         # We want to avoid going along the wall if possible. Make new board that excludes the outside
-        small_board = Board(clone=board_copy)
+        small_board = deepcopy(board_copy)
         small_board.height = small_board.height - 1
         small_board.width = small_board.width - 1
         small_board.start_index = 1

@@ -2,7 +2,7 @@ import time
 import logging
 from contextlib import contextmanager
 
-from .constants import DIR_NAMES, DIR_VECTORS, SNAKE
+from .constants import DIR_NAMES, DIR_VECTORS
 
 
 logging.basicConfig()
