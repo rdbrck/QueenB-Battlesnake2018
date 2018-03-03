@@ -145,7 +145,7 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
         if next_to_wall(starting_position, board):
             queue = deque([])
             for i in neighbours(starting_position):
-                if board.inside(i) and not next_to_wall(i, board):
+                if board.vacant(i) and not next_to_wall(i, board):
                     queue.append((i[0], i[1], (starting_position[0], starting_position[1], None)))
             _fp_found_path = _loop_through_queue(queue)
 
