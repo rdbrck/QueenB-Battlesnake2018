@@ -81,5 +81,5 @@ LOG_LEVEL = logging.DEBUG
 # Allows us to override from app/config.py file
 try:
     from .config import *
-except ModuleNotFoundError:
+except:
     pass
