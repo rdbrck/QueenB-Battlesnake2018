@@ -1,0 +1,9 @@
+# Drop a file like this in 'app/config.py' to override values 
+# in constants.py.
+
+# This is designed to aid testing/running other configurations.
+
+SNAKE_TAUNT = "Robert'); DROP TABLE Students;--"
+
+FOOD_CLOSE_HEALTH = 80  # Between this and ignore health just go for close food
+FOOD_CLOSE_DIST = 3  # The distance food is away to be considered close

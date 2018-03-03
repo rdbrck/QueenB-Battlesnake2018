@@ -1,12 +1,11 @@
 from .entities import Board
 from .strategy import need_food, check_attack, detect_wall_tunnels
-from .utils import timing, get_direction, add, neighbours, dist, touching, food_in_box, available_next_positions, next_to_wall
+from .utils import timing, get_direction, add, neighbours, touching, food_in_box, available_next_positions
 from .algorithms import bfs, find_safest_positions, rate_food, flood_fill, rate_cell, longest_path
 from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS, FOOD_BOXED_IN_HEALTH,\
                        SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR, TAIL_PREFERENCE_FACTOR, LOG_LEVEL,\
                        SNAKE, FOOD, SPOILED, EMPTY, START_TAUNT
 
-from functools import reduce
 from threading import Thread
 from math import floor
 from copy import deepcopy
@@ -239,7 +238,7 @@ def move():
 
                 if len(next_move) > 0:
                     # instead of max or min choose path with the best rated average
-                    path = max([(path, sum(rate_cell(point, board, snake) for point in path)/len(path)) for path in next_move], key=lambda x:x[1])[0]
+                    path = max([(path, sum(rate_cell(point, board, snake) for point in path)/len(path)) for path in next_move], key=lambda x: x[1])[0]
                     move = get_direction(snake.head, path[0])
 
     except Exception as e:
