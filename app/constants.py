@@ -74,7 +74,7 @@ FOOD_CLOSE_DIST = 3  # The distance food is away to be considered close
 FOOD_MEDIUM_HEALTH = 65  # Between this and close distance is medium distance
 FOOD_MEDIUM_DIST = 6  # How many moves away is a medium distance food
 FOOD_HUNGRY_HEALTH = 50  # When we should start going directly to safe food and contested food if there isn't safe food
-FOOD_HUNGRY_WALL_HEALTH = 70  # When we should start going for food next to walls (put way lower if there is lots of food) 30 if playing against Scott
+FOOD_HUNGRY_WALL_HEALTH = 50  # When we should start going for food next to walls (put way lower if there is lots of food) 30 if playing against Scott
 FOOD_DANGEROUS_HEALTH = 10  # If below value in health go for potentially dangerous food
 FOOD_DANGEROUS_DIST = 6  # Go for potentially dangerous food if distance to food is greater than value
 FOOD_STEAL_DIST = 3  # If we are within close/medium dist to a food and an enemy is within close/medium+value then steal it no matter our health
@@ -83,13 +83,13 @@ FOOD_BOXED_IN_HEALTH = 25  # if we are boxed in and below this value in health t
 DISABLE_ATTACKING = False  # Set to True to disable attack logic
 DISABLE_STEALING = False  # Set to True to disable food stealing
 
-SAFE_SPACE_FACTOR = 2
+SAFE_SPACE_FACTOR = 1.5
 TAIL_PREFERENCE_FACTOR = 1.5
 
 # Ratings for how important each thing is
 FOOD_RATING = 6
 SPOILED_RATING = 4
-BODY_RATING = 0.25
+BODY_RATING = 0.20
 EMPTY_RATING = 0.25
 ENEMY_RATING = -2
 OUT_SIDE_BOARD_RATING = -3
@@ -99,5 +99,5 @@ LOG_LEVEL = logging.DEBUG
 # Allows us to override from app/config.py file
 try:
     from .config import *
-except ModuleNotFoundError:
+except:
     pass
