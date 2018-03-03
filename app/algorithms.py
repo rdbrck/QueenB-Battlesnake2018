@@ -144,7 +144,7 @@ def bfs(starting_position, target_position, board, exclude, return_list, include
 
         # ----- _find_paths ----- #
         _fp_found_path = False
-        # First try and find a path to the target that immidiatly leads us away from the wall
+        # First try and find a path to the target that immediately leads us away from the wall
         if next_to_wall(starting_position, board):
             queue = deque([])
             for i in neighbours(starting_position):
