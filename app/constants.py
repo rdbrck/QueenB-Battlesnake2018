@@ -3,8 +3,8 @@ import random
 import logging
 
 SNAKE_NAME = "Rubber Ducky"
-SNAKE_COLOR = "#ff0000"
-SNAKE_SECONDARY_COLOR = "#ff0000"
+SNAKE_COLOR = "#e6e600"
+SNAKE_SECONDARY_COLOR = "#e6e600"
 SNAKE_IMAGE = "duck.jpg"
 SNAKE_HEAD = "safe"
 SNAKE_TAIL = "freckled"
@@ -53,7 +53,7 @@ SPOILED = 3
 
 FOOD_CLOSE_HEALTH = 80  # Between this and ignore health just go for close food
 FOOD_CLOSE_DIST = 3  # The distance food is away to be considered close
-FOOD_MEDIUM_HEALTH = 65  # Between this and close distance is medium distance 
+FOOD_MEDIUM_HEALTH = 65  # Between this and close distance is medium distance
 FOOD_MEDIUM_DIST = 6  # How many moves away is a medium distance food
 FOOD_HUNGRY_HEALTH = 50  # When we should start going directly to safe food and contested food if there isn't safe food
 FOOD_HUNGRY_WALL_HEALTH = 70  # When we should start going for food next to walls (put way lower if there is lots of food) 30 if playing against Scott
