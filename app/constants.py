@@ -2,38 +2,56 @@
 import random
 import logging
 
-SNAKE_NAME = "Rubber Ducky"
-SNAKE_COLOR = "#e6e600"
-SNAKE_SECONDARY_COLOR = "#e6e600"
-SNAKE_IMAGE = "duck.jpg"
-SNAKE_HEAD = "safe"
+SNAKE_NAME = "Queen B"
+SNAKE_COLOR = "#FFD700"
+SNAKE_SECONDARY_COLOR = "#000000"
+SNAKE_IMAGE = "yonce.png"
+SNAKE_HEAD = "tongue"
 SNAKE_TAIL = "freckled"
 
-SNAKE_TAUNT = random.choice([
-    "I'm crazy, I'm nuts. Just the way my brain works. I'm not normal. I think differently.",
-    "I know who I am and what I'm doing in my life and what I've accomplished and continue to accomplish as a performer, as a writer, as an artist, as a person, as a human being.",
-    "I grew up below the poverty line; I didn't have as much as other people did. I think it made me stronger as a person, it built my character. Now I have a 4.0 grade point average and I want to go to college, and just become a better person.",
-    "No one can stop me.",
-    "I think older people can appreciate my music because I really show my heart when I sing, and it's not corny. I think I can grow as an artist, and my fans will grow with me.",
-    "I want my world to be fun.",
-    "My mind is always racing.",
-    "Young people in the business have grown up and made the wrong decisions, or bad decisions, and haven't been good role models. To be someone that people look up to is important to me.",
-    "When people see a negative thing about me on a magazine, they're gonna buy it. Every time some site writes something bad, all my followers go on there, and it brings them more traffic.",
-    "I got a bright future ahead of me.",
-    "Of course, I think that people are just waiting for that time when I make a mistake and they're gonna jump on it.... There's gonna be haters.",
-    "Not trying to be arrogant, but if I walked down the street and a girl saw me, she might take a look back because maybe I'm good-looking, right?",
-    "I started singing about three years ago, I entered a local singing competition called Stratford Idol. The other people in the competition had been taking singing lessons and had vocal coaches. I wasn't taking it too seriously at the time, I would just sing around the house. I was only 12 and I got second place.",
-    "I'm looking forward to influencing others in a positive way. My message is you can do anything if you just put your mind to it.",
-    "It's not me trying to act or pose in a certain way. It's a lifestyle - like a suaveness or a swag, per se.",
-    "I want to be a young dad. By 25 or 26 I want to see myself, like, married or start looking for a family.",
-    "I think I'm probably gonna quit music.",
-    "The Beliebers have done some pretty crazy stuff. Last week, the night before I was due to do a show in Germany, four girls went into a dumpster so they could sneak into the building. They climbed in and hid. When the guys working on the truck started getting the garbage they found them straight away. It was crazy.",
-    "I've had a few gigs where things have got out of hand and there has been a huge crush with my fans. They are important and I don't want them being hurt. They are a mad crowd.",
-    "Sometimes it's overwhelming but I love my fans and it's always great to see them.",
-    "I'm happy with the man I'm becoming.",
-    "Cheryl Cole and Katy Perry are two of the hottest girls in the world - and so normal and funny with it. If I was a few years older they are the kind of girls I'd like to date. I want a younger version of Cheryl and Katy - a mixture of the two would be hot.",
-    "Canada's the best country in the world."
-])
+START_TAUNT = "All the single ladies!"
+SNAKE_TAUNT = [
+    "Nothin' else seems to hurt like the smile on your face when it's only in my memory",
+    "What's worse, lookin' jealous or crazy?",
+    "I am the dragon breathing fire. Beautiful mane I'm the lion",
+    "I been sippin', that's the only thing that's keeping me on fire",
+    "Our love was stronger than our pride",
+    "I'm bigger than life. My name is the lights. I'm the number one chick, I don't need no hype",
+    "Middle fingers up, put them hands high. Wave it in his face, tell him boy, bye",
+    "I break chains all by myself, won't let my freedom rot in hell. Imma keep runnin' cus a winner don't quit on themselves",
+    "You don't deserve my tears. I guess that's why they ain't here",
+    "I don't know much about fighting, but I know I will fight for you",
+    "I'll be there for you if somebody hurts you. Even if that somebody is me",
+    "Don't bore me just show me. All men talk but don't please",
+    "Yep, I put on him, It ain't nothing that I can't do. Yup, I buy my own if he deserve it, but his shit too",
+    "It's the way that you know what I thought I knew",
+    "Diva' is a female version of a hustler",
+    "If you scared, call that reverend",
+    "Some call it 'Arrogant', I call it 'Confident'",
+    "I took some time to live my life. But don't think I'm just his little wife",
+    "I'm a host of imperfection, and you see past all that",
+    "Gotta check these chicks cause they gon' block when I take these flicks",
+    "I swore I'd never fall again, but this don't even feel like falling",
+    "True love breathes salvation back into me",
+    "If you thought I would wait for you, you thought wrong",
+    "The truth of the matter is replacing you is so easy",
+    "Nine times out of ten, I'm in my feelings. Ten times out of nine I'm only human",
+    "Freakum dress out my closet, Yonce filling out the skirt, I look damn good, I ain't lost it",
+    "Got diamonds on my neck, got diamonds on my records",
+    "From now on, I'm gonna be my own best friend",
+    "I love you even more than who I thought you were before",
+    "Took 45 minutes to get all dressed up, and we ain't even gonna make it to this club",
+    "Pretty hurts. we shine the light on whatever's worst; Perfection is a disease of a nation",
+    "Tell me how should I feel when I know what I know and my female intuition tellin' me you a dog",
+    "We're smart enough to make these millions, strong enough to bear the children, then get back to business",
+    "Who needs a degree when you're schoolin' life?",
+    "Don't be mad once you see that he want it",
+    "Whatever I get you putting it on, now take it off while I watch you perform",
+    "I'm known to walk alone but I'm alone for a reason. Sending me a drink ain't appeasin believe me",
+    "Turn you into a star, I got it like that",
+    "You givin' me a taste of your honey, I want the whole beehive",
+    "I sneezed on that beat, and the beat got sicker"
+]
 
 DIR_NAMES = ['up', 'down', 'left', 'right']
 DIR_VECTORS = [(0, -1), (0, 1), (-1, 0), (1, 0)]

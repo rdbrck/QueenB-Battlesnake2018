@@ -4,9 +4,10 @@ from .utils import timing, get_direction, add, neighbours, touching, food_in_box
 from .algorithms import bfs, find_safest_positions, rate_food, flood_fill, rate_cell, longest_path
 from .constants import SNAKE_TAUNT, SNAKE_NAME, SNAKE_COLOR, SNAKE_HEAD, SNAKE_TAIL, SNAKE_IMAGE, DIR_NAMES, DIR_VECTORS, FOOD_BOXED_IN_HEALTH,\
                        SNAKE_SECONDARY_COLOR, DISABLE_ATTACKING, FOOD_HUNGRY_HEALTH, SAFE_SPACE_FACTOR, TAIL_PREFERENCE_FACTOR, LOG_LEVEL,\
-                       SNAKE, FOOD, SPOILED, EMPTY
+                       SNAKE, FOOD, SPOILED, EMPTY, START_TAUNT
 
 from threading import Thread
+from math import floor
 from copy import deepcopy
 import bottle
 import logging
@@ -31,7 +32,7 @@ def start():
     return {
         'color': SNAKE_COLOR,
         'secondary_color': SNAKE_SECONDARY_COLOR,
-        'taunt': SNAKE_TAUNT,
+        'taunt': START_TAUNT,
         'head_url': ('http://%s/static/%s' % (bottle.request.get_header('host'), SNAKE_IMAGE)),
         'name': SNAKE_NAME,
         'head_type': SNAKE_HEAD,
@@ -302,7 +303,9 @@ def move():
                     move = direction
                     break
 
+    turn = floor(data.get('turn', 0)/5)
+
     return {
         'move': move,  # 'up' | 'down' | 'left' | 'right'
-        'taunt': SNAKE_TAUNT
+        'taunt': SNAKE_TAUNT[turn % 40]
     }
