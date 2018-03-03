@@ -64,3 +64,42 @@ exhaust the space available to them.
 It also increases the chance of collisions
 or attacks between other snakes.
 
+# How to set constants
+
+Constants that affect strategies are dependent on
+- board size,
+- number of food,
+- number of alive snakes,
+- the ratio of the sum of all snake body lengths to the size of the board,
+- the ratio of our snakes length to free space on the board,
+- the ratio of food to open coordinates,
+- ...
+
+Some metrics are related,
+but one or another may have better correlation to the effectiveness of a strategy.
+
+For example,
+- board size
+- ratio of wall/corner-adjacent squares to total number of squares
+- ratio of wall/corner-adjacent squares to open-area squares
+
+are all related,
+but some will correlate
+more strongly with the success of a strategy than the others.
+
+Some of the measures that apply statically to walls
+also apply to snakes, but are dynamic.
+
+For example,
+- a corner square has one possible egress direction
+- a wall square has two possible egress directions
+- an open square has three possible egress directions
+
+(On the first turn, every square has one more egress direction
+because there is no restricting ingress diretion.)
+
+This relates to dynamic conditions caused by other snake bodies,
+- a square next to a linearly moving snake has two possible egress directions
+- a square next to the inside of a snake turn has one possible egress direction
+- a square between two linearly moving snakes has one possible egress direction
+
