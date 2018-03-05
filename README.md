@@ -1,4 +1,4 @@
-# battlesnake2018
+# Queen B
 
 ### Strategy
 
