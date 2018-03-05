@@ -5,7 +5,7 @@ upstream _battlesnake-control {
 server {
     listen [::]:8080;
     listen 8080;
-    server_name cjms-snake.rbrck.com;
+    server_name _;
 
     access_log /var/log/nginx/access-control.log;
 

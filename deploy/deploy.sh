@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REPO="${REPO:-git@github.com:rollerbrick/battlesnake2018.git}"
+REPO="${REPO}"
 BRANCH="${BRANCH:-master}"
 REPO_FILE="${REPO##*/}"
 REPO_NAME="${REPO%.git}"
@@ -17,7 +17,6 @@ WEB_GROUP="www-data"
 set -o errexit \
     -o nounset
 
-
 # Package Dependencies
 apt-get update
 apt-get -qy install \
@@ -28,7 +27,6 @@ apt-get -qy install \
     python-virtualenv \
     uwsgi \
     uwsgi-plugin-python3
-
 
 # Code
 cd "$BASE_DIR"

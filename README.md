@@ -2,17 +2,28 @@
 
 ### Strategy
 
-[Strategy Brainstorming](docs/strategy-brainstorm.md) is kept in the repo.
+General Flow:
+- gather data and setup board by freeing up spaces and finding 'bad_positions' we don't want to move in to (using floodfills and other logic)
+- determine if we are boxed in
+- determine if we have the opportunity to kill a snake (head to head and tunnel closing)
+- determine which food (if any) we want to get
+- do the following in order (skip a step if we have determined we don't want to do it or found a move in a previous step)
+	- attacking logic (unless we really need to prioritize food)
+	- boxed in logic (find exit then determine longest path)
+	- food pathing logic (bfs to pre determined food)
+	- find 'safe_spots' on the board by rating cells and path to the one that has the best rating/best path
+- if for some reason we still don't have a move (caught an error or all moves are fairly bad) do a series of floodfills to determine our best option
 
-tl;dr - pick a point, BFS, floodfill, catch errors, move
 
-Our strategy was to use a local search algorithm with everything we could think added in.
+This snake is a 'local search' snake that considers a large amount of situations (no predictions on what other snakes are going to do).
+During development we opted to use a variety of configuration variables so that we could easily modify it to face different bountysnakes.
+To help make sure this type of approach would work we created a set of static tests and dockerized several 'test' snakes.
+These helped a lot to ensure that future changes did not break the existing code. Linting was also run periodically.
 
-It would start by choosing a general direction to move based on very simple information about the location of snakes and food (where they were, open space on board, distance to food compared to other snakes, our health, other snakes length, etc.) Once we picked a general direction we would look at all open spaces in that direction to evaluate how desirable they were (creating a list of rated spots). For each spot in this list we spawned a thread and ran a simple BFS to find the best path for each (pursuing the best). If nothing returned a path then we were trapped so we would floodfill in each direction and pick the longest path.
+For the day of the competition this was deployed to a t2 instance in AWS.
+Seeing as we don't do any look ahead we didn't need a large instance and we were responding within ~50ms on average.
 
-This was the basic concept, but there were a lot of overrides – We made some squares invalid to move into, such as the ones around enemy snakes heads when they were larger than us. However, we also ignored that override if we were very hungry. Quick floodfill checks were also run on surrounding areas to make sure that we weren’t moving into a dead end.
-
-We were initially concerned about the 200ms response time limit. Following, we decided to avoid more complex algorithms such as Minimax or A*. However, the average response time for our snake on "production" hardware turned out to be ~30ms.
+[Strategy Brainstorming](docs/strategy-brainstorm.md) has some strategies that were discussed (most are not listed).
 
 ### Requirements
 

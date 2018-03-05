@@ -83,7 +83,7 @@ FOOD_BOXED_IN_HEALTH = 25  # if we are boxed in and below this value in health t
 DISABLE_ATTACKING = False  # Set to True to disable attack logic
 DISABLE_STEALING = False  # Set to True to disable food stealing
 
-SAFE_SPACE_FACTOR = 1.5
+SAFE_SPACE_FACTOR = 2
 TAIL_PREFERENCE_FACTOR = 1.5
 
 # Ratings for how important each thing is
